@@ -7,40 +7,45 @@ function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
-	const [macAddr, setMacAddress] = useState(null);
 	const toast = useRef(null); //TOAST
 
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceLink = (event) => {
 		event.preventDefault();
 
-		axios.get('/mac')
-			.then(res => setMacAddress(res.data))
-			.catch(err => console.log(err))
-
-		if(macAddr != null){
-			axios.post('/accountInfo', {
-				accountName: inputUsername,
-				accountPassword: inputPassword,
-				macAddress: macAddr
+		axios.post('http://localhost:5001/deviceLinkRequest', {
+			accountName: inputUsername,
+			accountPassword: inputPassword
+		})
+			.then(res => {
+				// console.log(res.response);
+				setInputUsername('');
+				setInputPassword('');
+				toast.current.show({ 
+					severity: 'success', 
+					summary: 'Linking Success', 
+					detail: 'Device Link Request Successful', 
+					life: 3000 });
 			})
-			.then(res => console.log(res))
-			.catch(err => console.log(err))
+			.catch(err => {
+				console.log(err)
+				let errorSummary = "";
+				if (err.code == "ERR_NETWORK") {
+					errorSummary += err.message
+				} else if (err.response.data.validationErrors) {
+					err.response.data.validationErrors.forEach(error => {
+						errorSummary += error.msg + ", \n"
+					});
+				} else if(err.response.data.message) {
+					errorSummary += err.response.data.message;
+				}
 
-			setInputUsername('');
-			setInputPassword('');
-			toast.current.show({ 
-				severity: 'success', 
-				summary: 'Linking Success', 
-				detail: 'MAC Address: ' + macAddr, 
-				life: 3000 });
-		}else {
-			toast.current.show({ 
-				severity: 'error', 
-				summary: 'Linking Failed', 
-				detail: 'Device MAC Address is not Acquired. Please try again.', 
-				life: 3000 });
-		}
+				toast.current.show({ 
+					severity: 'error', 
+					summary: 'Device Linking Failed', 
+					detail: errorSummary, 
+					life: 3000 });
+			})
 	}
 
 	const footerContent = (
@@ -54,7 +59,7 @@ function DeviceLinkModal(props) {
 
 	return (
 		<>
-			<Toast ref={toast} onHide={() => window.location.reload()}></Toast>
+			<Toast ref={toast} ></Toast>
 			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '50vw' }} onHide={props.close} draggable={false} resizable={false} footer={footerContent}>
 				<FloatingLabel
 					controlId="floatingInput"

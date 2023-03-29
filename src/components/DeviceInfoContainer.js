@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card } from 'react-bootstrap';
 import { Tag, Button } from 'primereact';
@@ -11,6 +11,8 @@ function DeviceInfoContainer() {
 	//DEVICE INFO
 	const [deviceStatusBadgeBackground, setDeviceStatusBadgeBackground] = useState('danger');
 	const [deviceStatusIcon, setDeviceStatusIcon] = useState('pi pi-times');
+	const [linkButton, setLinkButton] = useState();
+	const [unlinkButton, setUnlinkButton] = useState();
 	const { network: deviceNetwork,
 		station: deviceStation,
 		location: deviceLocation,
@@ -23,18 +25,15 @@ function DeviceInfoContainer() {
 			dispatch(setDeviceNetwork(res.data.network));
 			dispatch(setDeviceStation(res.data.station));
 			dispatch(setDeviceLocation(res.data.location));
-		})
-		.catch(err => console.log(err))
-
-		axios.get('/accountInfo')
-		.then(res => {
-			if (res.data.accountName != null) {
-				dispatch(setDeviceStatus("Linked"));
+			dispatch(setDeviceStatus(res.data.linkingStatus));
+			if (res.data.linkingStatus === 'Linked') {
 				setDeviceStatusBadgeBackground("success");
 				setDeviceStatusIcon('pi pi-check');
-			}
-			else{
-				dispatch(setDeviceStatus("Unlinked"));
+				setLinkButton(false); //disabled = false
+				setUnlinkButton(true); //enabled = true
+			} else{
+				setLinkButton(false); //disabled = false
+				setUnlinkButton(true); //disabled = true
 			}
 		})
 		.catch(err => console.log(err))
@@ -69,6 +68,7 @@ function DeviceInfoContainer() {
 								severity="success"
 								size="sm"
 								rounded text raised
+								disabled={linkButton}
 								onClick={() => setDeviceLinkModalShow(true)}
 							>
 							</Button>
@@ -77,6 +77,7 @@ function DeviceInfoContainer() {
 								severity="danger"
 								size="sm"
 								rounded text raised 
+								disabled={unlinkButton}
 								onClick={() => setDeviceUnlinkModalShow(true)}
 							>
 							</Button>
