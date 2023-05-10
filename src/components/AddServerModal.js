@@ -10,21 +10,41 @@ function AddServerModal(props) {
   const toast = useRef(null); //TOAST
 
   //HANDLE ADD SERVER FORM SUBMIT
-  const handleAddServerSubmit = (event) => {
+  const handleAddServerSubmit = async (event) => {
     event.preventDefault();
 
-    axios.post('/servers', {
-			hostName: inputHostName,
-			url: inputUrl,
-      isConnected: false
-		})
-		.then(res => console.log(res))
-		.catch(err => console.log(err))
+    try {
+      // Make a POST request to the server using Axios
+      const response = await axios.post('/servers/add', {
+        hostName: inputHostName,
+        url: inputUrl,
+      });
 
-    setInputUrl('');
-    setInputHostName('');
-    toast.current.show({ severity: 'success', summary: 'Add New Server Success', detail: 'New Server Added', life: 3000 });
-  }
+      console.log(response);
+      setInputUrl('');
+      setInputHostName('');
+
+      toast.current.show({
+        severity: 'success',
+        summary: 'Add New Server Success',
+        detail: 'New Server Added',
+        life: 3000
+      });
+
+      // Call onAddServer prop
+      props.onAddServer();
+      props.close();
+    } catch (error) {
+      console.log(error);
+
+      toast.current.show({
+        severity: 'error',
+        summary: 'Add New Server Error',
+        detail: error.response.data.message,
+        life: 3000,
+      });
+    }
+  };
 
   const footerContent = (
     <div>
@@ -43,9 +63,17 @@ function AddServerModal(props) {
 
   return (
     <>
-      <Toast ref={toast} onHide={() => window.location.reload(true)}></Toast>
+      <Toast ref={toast} ></Toast>
 
-      <Dialog header="Add New Server" visible={props.show} style={{ width: '50vw' }} onHide={props.close} draggable={false} resizable={false} footer={footerContent}>
+      <Dialog 
+        header="Add New Server" 
+        visible={props.show} 
+        style={{ width: '50vw' }} 
+        onHide={props.close} 
+        draggable={false} 
+        resizable={false} 
+        footer={footerContent}
+      >
         <FloatingLabel controlId="floatingUrl" label="URL">
           <Form.Control
             type="text"

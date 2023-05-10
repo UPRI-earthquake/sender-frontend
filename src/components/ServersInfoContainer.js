@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Form } from 'react-bootstrap';
-import { Tag, Button, DataTable, Column } from 'primereact';
+import { Button, DataTable, Column } from 'primereact';
 import { default as AddServerModal } from './AddServerModal';
 
-import { setConnection } from '../redux/serversInfo';
-
-import { ServerListService } from '../service/ServerListService';
+import axios from 'axios';
 
 function ServersInfoContainer() {
 
@@ -15,9 +13,19 @@ function ServersInfoContainer() {
 	const [servers, setServers] = useState([]);
 	const [checked, setChecked] = useState(false);
 
+	const fetchServers = async () => {
+		// ServerListService.getServers().then((data) => setServers(data));
+		const response = await axios.get('http://localhost:5001/servers/getList')
+		setServers(response.data)
+	}
+
 	useEffect(() => {
-    	ServerListService.getServers().then((data) => setServers(data));
+    	fetchServers();
   	}, []);
+
+	const handleAddServer = () => {
+		fetchServers();
+	}
 
 	const actionBodyTemplate = (rowData) => {
 		return (
@@ -35,7 +43,7 @@ function ServersInfoContainer() {
 
 	return (
 		<>
-			<AddServerModal show={showAddServerModal} close={() => setAddServerModalShow(false)}></AddServerModal>
+			<AddServerModal show={showAddServerModal} close={() => setAddServerModalShow(false)} onAddServer={handleAddServer}></AddServerModal>
 
 			<Card border="primary">
 				<Card.Header>Server(s)</Card.Header>
