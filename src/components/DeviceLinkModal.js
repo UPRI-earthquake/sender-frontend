@@ -14,8 +14,8 @@ function DeviceLinkModal(props) {
 		event.preventDefault();
 
 		axios.post('http://localhost:5001/deviceLinkRequest', {
-			accountName: inputUsername,
-			accountPassword: inputPassword
+			username: inputUsername,
+			password: inputPassword
 		})
 			.then(res => {
 				// console.log(res.response);
@@ -30,7 +30,7 @@ function DeviceLinkModal(props) {
 			.catch(err => {
 				console.log(err)
 				let errorSummary = "";
-				if (err.code == "ERR_NETWORK") {
+				if (err.code === "ERR_NETWORK") {
 					errorSummary += err.message
 				} else if (err.response.data.validationErrors) {
 					err.response.data.validationErrors.forEach(error => {
@@ -55,12 +55,18 @@ function DeviceLinkModal(props) {
 		</div>
 	);
 
+	const hideModal = () => {
+		setInputUsername('');
+		setInputPassword('');
+		props.close()
+	}
+
 
 
 	return (
 		<>
 			<Toast ref={toast} ></Toast>
-			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '50vw' }} onHide={props.close} draggable={false} resizable={false} footer={footerContent}>
+			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '50vw' }} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
 				<FloatingLabel
 					controlId="floatingInput"
 					label="Username"
