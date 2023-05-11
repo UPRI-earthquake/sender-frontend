@@ -2,41 +2,51 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card } from 'react-bootstrap';
 import { Tag, Button } from 'primereact';
-import { useSelector, useDispatch } from "react-redux";
-import { setDeviceNetwork, setDeviceStation, setDeviceLocation, setDeviceStatus, unsetDeviceNetwork, } from '../redux/deviceInfo';
 import { default as DeviceLinkModal } from './DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './DeviceUnlinkModal';
 
 function DeviceInfoContainer() {
 	//DEVICE INFO
-	const [deviceStatusBadgeBackground, setDeviceStatusBadgeBackground] = useState('danger');
-	const [deviceStatusIcon, setDeviceStatusIcon] = useState('pi pi-times');
+	const [statusBadgeBackground, setStatusBadgeBackground] = useState('danger');
+	const [statusIcon, setStatusIcon] = useState('pi pi-times');
 	const [linkButton, setLinkButton] = useState();
 	const [unlinkButton, setUnlinkButton] = useState();
-	const { network: deviceNetwork,
-		station: deviceStation,
-		location: deviceLocation,
-		status: deviceStatus } = useSelector((state) => state.deviceInfo);
-	const dispatch = useDispatch();
+	const [network, setNetwork] = useState('Not Set');
+	const [station, setStation] = useState('Not Set');
+	const [location, setLocation] = useState('Not Set');
+	const [elevation, setElevation] = useState('Not Set');
+	const [channel, setChannel] = useState('Not Set');
+	const [status, setStatus] = useState('Unlinked');
 
-	useEffect(() => {
-		axios.get('/deviceInfo')
-		.then(res => {
-			dispatch(setDeviceNetwork(res.data.network));
-			dispatch(setDeviceStation(res.data.station));
-			dispatch(setDeviceLocation(res.data.location));
-			dispatch(setDeviceStatus(res.data.linkingStatus));
-			if (res.data.linkingStatus === 'Linked') {
-				setDeviceStatusBadgeBackground("success");
-				setDeviceStatusIcon('pi pi-check');
+	const getDeviceInfo = async () => {
+		try {
+			const response = await axios.get('http://localhost:5001/deviceInfo')
+			// console.log(response.data)
+			// Set device information
+			if (response.data.streamId != null) {
+				setNetwork(response.data.network)
+				setStation(response.data.station)
+				setLocation(response.data.location)
+				setElevation(response.data.elevation)
+				setChannel(response.data.channel)
+				setStatus("Linked")
+				setStatusBadgeBackground("success");
+				setStatusIcon('pi pi-check');
 				setLinkButton(false); //disabled = false
 				setUnlinkButton(true); //enabled = true
 			} else{
+				setStatus("Unlinked")
 				setLinkButton(false); //disabled = false
 				setUnlinkButton(true); //disabled = true
 			}
-		})
-		.catch(err => console.log(err))
+
+		} catch (error) {
+			console.log("Axios Error: " + error)
+		}
+	}
+
+	useEffect(() => {
+		getDeviceInfo()
 	}, [])
 
 	//MODAL STATES
@@ -54,13 +64,17 @@ function DeviceInfoContainer() {
 				<Card.Body>
 					<Card.Text>
 						Network:
-						<Tag className="m-1" severity="info" value={deviceNetwork}></Tag><br></br>
+						<Tag className="m-1" severity="info" value={network}></Tag><br></br>
 						Station:
-						<Tag className="m-1" severity="info" value={deviceStation}></Tag><br></br>
+						<Tag className="m-1" severity="info" value={station}></Tag><br></br>
 						Location:
-						<Tag className="m-1" severity="info" value={deviceLocation}></Tag><br></br>
+						<Tag className="m-1" severity="info" value={location}></Tag><br></br>
+						Elevation:
+						<Tag className="m-1" severity="info" value={elevation}></Tag><br></br>
+						Channel:
+						<Tag className="m-1" severity="info" value={channel}></Tag><br></br>
 						Device Status:
-						<Tag className="m-2 mt-1" icon={deviceStatusIcon} severity={deviceStatusBadgeBackground} value={deviceStatus}></Tag><br></br>
+						<Tag className="m-2 mt-1" icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag><br></br>
 
 						<div className="d-grid gap-2">
 							<Button
