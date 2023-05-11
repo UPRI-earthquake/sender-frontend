@@ -8,16 +8,9 @@ function DeviceUnlinkModal(props) {
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceUnlink = (event) => {
 		event.preventDefault();
-
-		axios.post('/accountInfo', {
-			accountName: null,
-			accountPassword: null,
-			macAddress: null
-		})
-		.then(res => console.log(res))
-		.catch(err => console.log(err))
-
-		toast.current.show({ severity: 'success', summary: 'Unlinking Success', detail: 'Device-Account Unlinked', life: 3000 });
+		// TODO: unlink device codeflow
+		
+		// toast.current.show({ severity: 'success', summary: 'Unlinking Success', detail: 'Device-Account Unlinked', life: 3000 });
 	}
 
 	const footerContent = (
