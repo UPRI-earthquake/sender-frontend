@@ -74,7 +74,7 @@ function AddServerModal(props) {
         resizable={false} 
         footer={footerContent}
       >
-        <FloatingLabel controlId="floatingUrl" label="URL">
+        <FloatingLabel controlId="floatingUrl" label="Server URL - [https://example.com]">
           <Form.Control
             type="text"
             placeholder="ServerUrl"
@@ -83,7 +83,7 @@ function AddServerModal(props) {
             autoFocus />
         </FloatingLabel><br></br>
 
-        <FloatingLabel controlId="serverName" label="ServerName">
+        <FloatingLabel controlId="serverName" label="Host Name - [Server Alias]">
           <Form.Control
             type="text"
             placeholder="ServerUrl"
