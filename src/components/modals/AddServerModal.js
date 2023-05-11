@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Button, Dialog, Toast } from 'primereact';
+import { Button, Dialog, Toast, Tooltip } from 'primereact';
 import { Form, FloatingLabel } from 'react-bootstrap';
 import axios from 'axios';
 
@@ -48,12 +48,18 @@ function AddServerModal(props) {
 
   const footerContent = (
     <div>
-      <Button label="Cancel"
+      <Tooltip target=".submitBtn"></Tooltip>
+      <Button 
+        label="Cancel"
         icon="pi pi-times"
         onClick={props.close}
         rounded text raised
         className="p-button-text" />
-      <Button label="Add Server"
+      <Button 
+        className="submitBtn"
+        data-pr-tooltip="Submit Form"
+        data-pr-position="bottom"
+        label="Add Server"
         severity="info"
         icon="pi pi-check"
         rounded
@@ -74,19 +80,23 @@ function AddServerModal(props) {
         resizable={false} 
         footer={footerContent}
       >
-        <FloatingLabel controlId="floatingUrl" label="Server URL - [https://example.com]">
+        <FloatingLabel controlId="floatingUrl" label="Server URL - https://example.com">
+          <Tooltip target=".urlInput"></Tooltip>
           <Form.Control
+            className="urlInput"
+            data-pr-tooltip="Input the URL of the ringserver you want to connect to here"
             type="text"
-            placeholder="ServerUrl"
             value={inputUrl}
             onChange={(e) => setInputUrl(e.target.value)}
             autoFocus />
         </FloatingLabel><br></br>
 
-        <FloatingLabel controlId="serverName" label="Host Name - [Server Alias]">
+        <FloatingLabel controlId="serverName" label="Host Name">
+          <Tooltip target=".hostNameInput"></Tooltip>
           <Form.Control
+            className="hostNameInput"
+            data-pr-tooltip="Input the server alias here"
             type="text"
-            placeholder="ServerUrl"
             value={inputHostName}
             onChange={(e) => setInputHostName(e.target.value)} />
         </FloatingLabel>

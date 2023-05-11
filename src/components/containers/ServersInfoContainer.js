@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from 'react-bootstrap';
-import { Button, DataTable, Column, InputSwitch } from 'primereact';
+import { Button, DataTable, Column, InputSwitch, Tooltip } from 'primereact';
 import { default as AddServerModal } from './../modals/AddServerModal';
 
 import axios from 'axios';
@@ -47,11 +47,14 @@ function ServersInfoContainer() {
 					<DataTable value={servers} className="mb-2">
 						<Column field="hostName" header="Host Name"></Column>
 						<Column field="url" header="Server URL"></Column>
-						<Column body={renderSwitch} header="Connection Status"></Column>
-						
+						<Column body={renderSwitch} header="Connection Status"></Column>				
 					</DataTable>
 					<div className="d-grid gap-2">
+						<Tooltip target=".linkButton"></Tooltip>
 						<Button
+							className="linkButton"
+							data-pr-tooltip="Click here to open the form for adding new ringserver"
+							data-pr-position="bottom"
 							label="Add New Server"
 							severity="success"
 							size="sm"
