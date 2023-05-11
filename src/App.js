@@ -6,8 +6,8 @@ import "primereact/resources/primereact.min.css";
 import 'primeicons/primeicons.css';
 
 import Header from "./components/Header";
-import DeviceInfoContainer from './components/DeviceInfoContainer';
-import ServersInfoContainer from './components/ServersInfoContainer';
+import DeviceInfoContainer from './components/containers/DeviceInfoContainer';
+import ServersInfoContainer from './components/containers/ServersInfoContainer';
 
 function App() {
   return (
