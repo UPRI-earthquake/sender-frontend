@@ -10,7 +10,7 @@ function DeviceInfoContainer() {
 	const [statusBadgeBackground, setStatusBadgeBackground] = useState('danger');
 	const [statusIcon, setStatusIcon] = useState('pi pi-times');
 	const [linkButton, setLinkButton] = useState();
-	const [unlinkButton, setUnlinkButton] = useState();
+	const [unlinkButton, setUnlinkButton] = useState(true);
 	const [network, setNetwork] = useState('Not Set');
 	const [station, setStation] = useState('Not Set');
 	const [location, setLocation] = useState('Not Set');
