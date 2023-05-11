@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Form } from 'react-bootstrap';
-import { Button, DataTable, Column } from 'primereact';
+import { Card } from 'react-bootstrap';
+import { Button, DataTable, Column, InputSwitch } from 'primereact';
 import { default as AddServerModal } from './../modals/AddServerModal';
 
 import axios from 'axios';
@@ -11,7 +11,6 @@ function ServersInfoContainer() {
 	const [showAddServerModal, setAddServerModalShow] = useState(false);
 
 	const [servers, setServers] = useState([]);
-	const [checked, setChecked] = useState(false);
 
 	const fetchServers = async () => {
 		// ServerListService.getServers().then((data) => setServers(data));
@@ -27,19 +26,16 @@ function ServersInfoContainer() {
 		fetchServers();
 	}
 
-	const actionBodyTemplate = (rowData) => {
+	const renderSwitch = (rowData) => {
 		return (
-			<React.Fragment>
-				<Form.Check 
-					type="switch"
-					id="custom-switch"
-					label={rowData.connectionMessage}
-					checked={rowData.isConnected}
-					onChange={(e) => setChecked(e.value)}
-				/>
-			</React.Fragment>
+			<InputSwitch checked={rowData.isConnected}  onChange={(e) => handleToggleChange(e, rowData)}/>
 		);
-	};
+	}
+
+	// TODO: handler for on/off (stream/stop streaming)
+	const handleToggleChange = (event, rowData) => {
+		
+	}
 
 	return (
 		<>
@@ -51,11 +47,7 @@ function ServersInfoContainer() {
 					<DataTable value={servers} className="mb-2">
 						<Column field="hostName" header="Host Name"></Column>
 						<Column field="url" header="Server URL"></Column>
-						<Column header="Connection Status"
-							body={actionBodyTemplate}
-							exportable={false}
-							style={{ minWidth: '12rem' }}>
-						</Column>
+						<Column body={renderSwitch} header="Connection Status"></Column>
 						
 					</DataTable>
 					<div className="d-grid gap-2">
