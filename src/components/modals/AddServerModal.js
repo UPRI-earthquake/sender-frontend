@@ -15,7 +15,7 @@ function AddServerModal(props) {
 
     try {
       // Make a POST request to the server using Axios
-      const response = await axios.post('/servers/add', {
+      const response = await axios.post('http://10.196.16.100:5001/servers/add', {
         hostName: inputHostName,
         url: inputUrl,
       });

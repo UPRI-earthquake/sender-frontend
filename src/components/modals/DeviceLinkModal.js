@@ -14,7 +14,7 @@ function DeviceLinkModal(props) {
 		event.preventDefault();
 
 		try {
-			const response = await axios.post('http://localhost:5001/deviceLinkRequest', {
+			await axios.post('http://10.196.16.100:5001/deviceLinkRequest', {
 				username: inputUsername,
 				password: inputPassword
 			});

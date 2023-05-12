@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card } from 'react-bootstrap';
-import { Button, DataTable, Column, InputSwitch, Tooltip } from 'primereact';
+import { Button, DataTable, Column, InputSwitch, Tooltip, Panel } from 'primereact';
 import { default as AddServerModal } from './../modals/AddServerModal';
 
 import axios from 'axios';
@@ -14,7 +13,7 @@ function ServersInfoContainer() {
 
 	const fetchServers = async () => {
 		// ServerListService.getServers().then((data) => setServers(data));
-		const response = await axios.get('http://localhost:5001/servers/getList')
+		const response = await axios.get('http://10.196.16.100:5001/servers/getList')
 		setServers(response.data)
 	}
 
@@ -28,7 +27,7 @@ function ServersInfoContainer() {
 
 	const renderSwitch = (rowData) => {
 		return (
-			<InputSwitch checked={rowData.isConnected}  onChange={(e) => handleToggleChange(e, rowData)}/>
+			<InputSwitch checked={rowData.isAllowedToStream}  onChange={(e) => handleToggleChange(e, rowData)}/>
 		);
 	}
 
@@ -41,30 +40,27 @@ function ServersInfoContainer() {
 		<>
 			<AddServerModal show={showAddServerModal} close={() => setAddServerModalShow(false)} onAddServer={handleAddServer}></AddServerModal>
 
-			<Card border="primary">
-				<Card.Header>Server(s)</Card.Header>
-				<Card.Body>
-					<DataTable value={servers} className="mb-2">
-						<Column field="hostName" header="Host Name"></Column>
-						<Column field="url" header="Server URL"></Column>
-						<Column body={renderSwitch} header="Connection Status"></Column>				
-					</DataTable>
-					<div className="d-grid gap-2">
-						<Tooltip target=".linkButton"></Tooltip>
-						<Button
-							className="linkButton"
-							data-pr-tooltip="Click here to open the form for adding new ringserver"
-							data-pr-position="bottom"
-							label="Add New Server"
-							severity="success"
-							size="sm"
-							rounded text raised
-							onClick={() => setAddServerModalShow(true)}
-							>
-						</Button>
-					</div>
-				</Card.Body>
-			</Card>
+			<Panel header="Server Information">
+				<DataTable value={servers} className="mb-2">
+					<Column field="hostName" header="Host Name"></Column>
+					<Column field="url" header="Server URL"></Column>
+					<Column body={renderSwitch} header="Connection Status"></Column>
+				</DataTable>
+				<div className="d-grid gap-2">
+					<Tooltip target=".linkButton"></Tooltip>
+					<Button
+						className="linkButton"
+						data-pr-tooltip="Click here to open the form for adding new ringserver"
+						data-pr-position="bottom"
+						label="Add New Server"
+						severity="success"
+						size="sm"
+						rounded text raised
+						onClick={() => setAddServerModalShow(true)}
+					>
+					</Button>
+				</div>
+			</Panel>
 		</>
 	);
 }

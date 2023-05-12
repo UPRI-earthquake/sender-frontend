@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card } from 'react-bootstrap';
-import { Tag, Button } from 'primereact';
+import { Tag, Button, Panel } from 'primereact';
 import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 
@@ -20,7 +19,7 @@ function DeviceInfoContainer() {
 
 	const getDeviceInfo = async () => {
 		try {
-			const response = await axios.get('http://localhost:5001/deviceInfo')
+			const response = await axios.get('http://10.196.16.100:5001/deviceInfo')
 			console.log(response)
 			// Set device information
 			if (response.data.streamId != null) {
@@ -63,46 +62,41 @@ function DeviceInfoContainer() {
 
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
 
-			<Card border="primary">
-				<Card.Header>Device Info</Card.Header>
-				<Card.Body>
-					<Card.Text>
-						Network:
-						<Tag className="m-1" severity="info" value={network}></Tag><br></br>
-						Station:
-						<Tag className="m-1" severity="info" value={station}></Tag><br></br>
-						Location:
-						<Tag className="m-1" severity="info" value={location}></Tag><br></br>
-						Elevation:
-						<Tag className="m-1" severity="info" value={elevation}></Tag><br></br>
-						Channel:
-						<Tag className="m-1" severity="info" value={channel}></Tag><br></br>
-						Device Status:
-						<Tag className="m-2 mt-1" icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag><br></br>
+			<Panel header="Device Information">
+				Network:
+				<Tag className="m-1" severity="info" value={network}></Tag><br></br>
+				Station:
+				<Tag className="m-1" severity="info" value={station}></Tag><br></br>
+				Location:
+				<Tag className="m-1" severity="info" value={location}></Tag><br></br>
+				Elevation:
+				<Tag className="m-1" severity="info" value={elevation}></Tag><br></br>
+				Channel:
+				<Tag className="m-1" severity="info" value={channel}></Tag><br></br>
+				Device Status:
+				<Tag className="m-2 mt-1" icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag><br></br>
 
-						<div className="d-grid gap-2">
-							<Button
-								label="Link"
-								severity="success"
-								size="sm"
-								rounded text raised
-								disabled={linkButton}
-								onClick={() => setDeviceLinkModalShow(true)}
-							>
-							</Button>
-							<Button
-								label="Unlink"
-								severity="danger"
-								size="sm"
-								rounded text raised 
-								disabled={unlinkButton}
-								onClick={() => setDeviceUnlinkModalShow(true)}
-							>
-							</Button>
-						</div>
-					</Card.Text>
-				</Card.Body>
-			</Card>
+				<div className="d-grid gap-2">
+					<Button
+						label="Link"
+						severity="success"
+						size="sm"
+						rounded text raised
+						disabled={linkButton}
+						onClick={() => setDeviceLinkModalShow(true)}
+					>
+					</Button>
+					<Button
+						label="Unlink"
+						severity="danger"
+						size="sm"
+						rounded text raised
+						disabled={unlinkButton}
+						onClick={() => setDeviceUnlinkModalShow(true)}
+					>
+					</Button>
+				</div>
+			</Panel>
 		</>
 	);
 }

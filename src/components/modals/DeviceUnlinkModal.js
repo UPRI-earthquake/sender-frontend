@@ -1,6 +1,5 @@
 import React, { useRef } from "react";
 import { Button, Dialog, Toast } from 'primereact';
-import axios from "axios";
 
 function DeviceUnlinkModal(props) {
 	const toast = useRef(null); //TOAST
@@ -9,7 +8,7 @@ function DeviceUnlinkModal(props) {
 	const handleDeviceUnlink = (event) => {
 		event.preventDefault();
 		// TODO: unlink device codeflow
-		
+
 		// toast.current.show({ severity: 'success', summary: 'Unlinking Success', detail: 'Device-Account Unlinked', life: 3000 });
 	}
 
