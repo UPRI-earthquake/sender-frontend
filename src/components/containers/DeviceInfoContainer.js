@@ -21,7 +21,7 @@ function DeviceInfoContainer() {
 	const getDeviceInfo = async () => {
 		try {
 			const response = await axios.get('http://localhost:5001/deviceInfo')
-			// console.log(response.data)
+			console.log(response)
 			// Set device information
 			if (response.data.streamId != null) {
 				setNetwork(response.data.network)
@@ -32,8 +32,8 @@ function DeviceInfoContainer() {
 				setStatus("Linked")
 				setStatusBadgeBackground("success");
 				setStatusIcon('pi pi-check');
-				setLinkButton(false); //disabled = false
-				setUnlinkButton(true); //enabled = true
+				setLinkButton(true); //disabled = true
+				setUnlinkButton(false); //enabled = false
 			} else{
 				setStatus("Unlinked")
 				setLinkButton(false); //disabled = false
@@ -49,13 +49,17 @@ function DeviceInfoContainer() {
 		getDeviceInfo()
 	}, [])
 
+	const handleOnLinkingSuccess = () => {
+		getDeviceInfo();
+	}
+
 	//MODAL STATES
 	const [showDeviceLinkModal, setDeviceLinkModalShow] = useState(false);
 	const [showDeviceUnlinkModal, setDeviceUnlinkModalShow] = useState(false);
 
 	return (
 		<>
-			<DeviceLinkModal show={showDeviceLinkModal} close={() => setDeviceLinkModalShow(false)}></DeviceLinkModal>
+			<DeviceLinkModal show={showDeviceLinkModal} close={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess}></DeviceLinkModal>
 
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
 

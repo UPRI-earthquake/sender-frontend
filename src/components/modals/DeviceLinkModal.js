@@ -10,43 +10,51 @@ function DeviceLinkModal(props) {
 	const toast = useRef(null); //TOAST
 
 	//HANDLE LINK FORM SUBMIT
-	const handleDeviceLink = (event) => {
+	const handleDeviceLink = async (event) => {
 		event.preventDefault();
 
-		axios.post('http://localhost:5001/deviceLinkRequest', {
-			username: inputUsername,
-			password: inputPassword
-		})
-			.then(res => {
-				// console.log(res.response);
-				setInputUsername('');
-				setInputPassword('');
-				toast.current.show({ 
-					severity: 'success', 
-					summary: 'Linking Success', 
-					detail: 'Device Link Request Successful', 
-					life: 3000 });
-			})
-			.catch(err => {
-				console.log(err)
-				let errorSummary = "";
-				if (err.code === "ERR_NETWORK") {
-					errorSummary += err.message
-				} else if (err.response.data.validationErrors) {
-					err.response.data.validationErrors.forEach(error => {
-						errorSummary += error.msg + ", \n"
-					});
-				} else if(err.response.data.message) {
-					errorSummary += err.response.data.message;
-				}
+		try {
+			const response = await axios.post('http://localhost:5001/deviceLinkRequest', {
+				username: inputUsername,
+				password: inputPassword
+			});
 
-				toast.current.show({ 
-					severity: 'error', 
-					summary: 'Device Linking Failed', 
-					detail: errorSummary, 
-					life: 3000 });
-			})
+			setInputUsername('');
+			setInputPassword('');
+			toast.current.show({
+				severity: 'success',
+				summary: 'Linking Success',
+				detail: 'Device Link Request Successful',
+				life: 3000
+			});
+
+			// Call onLinkingSuccess prop
+			props.onLinkingSuccess();
+			props.close();
+
+		} catch (error) {
+			console.log(error);
+			let errorSummary = "";
+
+			if (error.code === "ERR_NETWORK") {
+				errorSummary += error.message;
+			} else if (error.response.data.validationErrors) {
+				error.response.data.validationErrors.forEach(error => {
+					errorSummary += error.msg + ", \n";
+				});
+			} else if (error.response.data.message) {
+				errorSummary += error.response.data.message;
+			}
+
+			toast.current.show({
+				severity: 'error',
+				summary: 'Device Linking Failed',
+				detail: errorSummary,
+				life: 3000
+			});
+		}
 	}
+	  
 
 	const footerContent = (
 		<div>
