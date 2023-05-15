@@ -19,7 +19,8 @@ function DeviceInfoContainer() {
 
 	const getDeviceInfo = async () => {
 		try {
-			const response = await axios.get('http://10.196.16.100:5001/deviceInfo')
+			const backend_host = process.env.W3_BACKEND
+			const response = await axios.get(`${backend_host}/deviceInfo`)
 			console.log(response)
 			// Set device information
 			if (response.data.streamId != null) {

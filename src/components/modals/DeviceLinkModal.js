@@ -14,7 +14,8 @@ function DeviceLinkModal(props) {
 		event.preventDefault();
 
 		try {
-			await axios.post('http://10.196.16.100:5001/deviceLinkRequest', {
+			const backend_host = process.env.W3_BACKEND
+			await axios.post(`${backend_host}/deviceLinkRequest`, {
 				username: inputUsername,
 				password: inputPassword
 			});
