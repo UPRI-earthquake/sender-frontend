@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, DataTable, Column, InputSwitch, Tooltip, Panel } from 'primereact';
 import { default as AddServerModal } from './../modals/AddServerModal';
+import styles from "./ServersInfoContainer.module.css";
 
 import axios from 'axios';
 
@@ -38,7 +39,7 @@ function ServersInfoContainer() {
 	}
 
 	return (
-		<>
+    <div className={styles.serversInfo}>
 			<AddServerModal show={showAddServerModal} close={() => setAddServerModalShow(false)} onAddServer={handleAddServer}></AddServerModal>
 
 			<Panel header="Server Information">
@@ -62,7 +63,7 @@ function ServersInfoContainer() {
 					</Button>
 				</div>
 			</Panel>
-		</>
+		</div>
 	);
 }
 

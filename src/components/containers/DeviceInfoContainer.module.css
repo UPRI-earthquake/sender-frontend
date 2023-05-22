@@ -1,0 +1,6 @@
+.deviceInfo {
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;
+  margin-right: 16px;
+}

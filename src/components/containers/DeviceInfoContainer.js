@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Tag, Button, Panel } from 'primereact';
 import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
+import styles from "./DeviceInfoContainer.module.css";
 
 function DeviceInfoContainer() {
 	//DEVICE INFO
@@ -58,7 +59,7 @@ function DeviceInfoContainer() {
 	const [showDeviceUnlinkModal, setDeviceUnlinkModalShow] = useState(false);
 
 	return (
-		<>
+    <div className={styles.deviceInfo}>
 			<DeviceLinkModal show={showDeviceLinkModal} close={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess}></DeviceLinkModal>
 
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
@@ -98,7 +99,7 @@ function DeviceInfoContainer() {
 					</Button>
 				</div>
 			</Panel>
-		</>
+		</div>
 	);
 }
 
