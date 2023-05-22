@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Button, Dialog, Toast, Tooltip, InputText, Password } from 'primereact';
 import axios from "axios";
-import './Modal.module.css'
+import './Modal.css'
 
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
