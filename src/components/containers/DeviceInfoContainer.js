@@ -19,7 +19,7 @@ function DeviceInfoContainer() {
 
 	const getDeviceInfo = async () => {
 		try {
-			const backend_host = process.env.W3_BACKEND
+			const backend_host = process.env.REACT_APP_BACKEND_DEV
 			const response = await axios.get(`${backend_host}/deviceInfo`)
 			console.log(response)
 			// Set device information

@@ -15,7 +15,7 @@ function AddServerModal(props) {
 
     try {
       // Make a POST request to the server using Axios
-      const backend_host = process.env.W3_BACKEND
+      const backend_host = process.env.REACT_APP_BACKEND_DEV
       const response = await axios.post(`${backend_host}/servers/add`, {
         hostName: inputHostName,
         url: inputUrl,

@@ -13,7 +13,7 @@ function ServersInfoContainer() {
 
 	const fetchServers = async () => {
 		// ServerListService.getServers().then((data) => setServers(data));
-		const backend_host = process.env.W3_BACKEND
+		const backend_host = process.env.REACT_APP_BACKEND_DEV
 		const response = await axios.get(`${backend_host}/servers/getList`)
 		setServers(response.data)
 	}
