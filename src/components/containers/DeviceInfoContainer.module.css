@@ -4,3 +4,33 @@
   max-width: 300px;
   margin-right: 16px;
 }
+
+
+.elementSpacing {
+  margin-bottom: 0.5rem;
+}
+
+.tagContainer {
+  display: flex;
+  align-items: center;
+}
+
+.tagLabel {
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.tagValue {
+  flex-grow: 1;
+  margin-left: 1em;
+}
+
+.buttonDiv {
+  display: flex;
+  justify-content: center;
+  padding-top: 1rem;
+}
+
+.buttonDiv button:not(:last-child) {
+  margin-right: 1em;
+}

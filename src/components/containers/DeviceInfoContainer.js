@@ -65,20 +65,44 @@ function DeviceInfoContainer() {
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
 
 			<Panel header="Device Information">
-				Network:
-				<Tag className="m-1" severity="info" value={network}></Tag><br></br>
-				Station:
-				<Tag className="m-1" severity="info" value={station}></Tag><br></br>
-				Location:
-				<Tag className="m-1" severity="info" value={location}></Tag><br></br>
-				Elevation:
-				<Tag className="m-1" severity="info" value={elevation}></Tag><br></br>
-				Channel:
-				<Tag className="m-1" severity="info" value={channel}></Tag><br></br>
-				Device Status:
-				<Tag className="m-2 mt-1" icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag><br></br>
+				<div className={styles.elementSpacing}>
+					<div className={styles.tagContainer}>
+						<div className={styles.tagLabel}>Network:</div>
+						<Tag className={styles.tagValue} severity="info" value={network}></Tag>
+					</div>
+				</div>
+				<div className={styles.elementSpacing}>
+					<div className={styles.tagContainer}>
+						<div className={styles.tagLabel}>Station:</div>
+						<Tag className={styles.tagValue} severity="info" value={station}></Tag>
+					</div>
+				</div>
+				<div className={styles.elementSpacing}>
+					<div className={styles.tagContainer}>
+						<div className={styles.tagLabel}>Location:</div>
+						<Tag className={styles.tagValue} severity="info" value={location}></Tag>
+					</div>
+				</div>
+				<div className={styles.elementSpacing}>
+					<div className={styles.tagContainer}>
+						<div className={styles.tagLabel}>Elevation:</div>
+						<Tag className={styles.tagValue} severity="info" value={elevation}></Tag>
+					</div>
+				</div>
+				<div className={styles.elementSpacing}>
+					<div className={styles.tagContainer}>
+						<div className={styles.tagLabel}>Channel:</div>
+						<Tag className={styles.tagValue} severity="info" value={channel}></Tag>
+					</div>
+				</div>
+				<div className={styles.elementSpacing}>
+					<div className={styles.tagContainer}>
+						<div className={styles.tagLabel}>Device Status:</div>
+						<Tag className={styles.tagValue} icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag>
+					</div>
+				</div>
 
-				<div className="d-grid gap-2">
+				<div className={styles.buttonDiv}>
 					<Button
 						label="Link"
 						severity="success"

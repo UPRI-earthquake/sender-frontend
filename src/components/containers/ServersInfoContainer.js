@@ -48,7 +48,7 @@ function ServersInfoContainer() {
 					<Column field="url" header="Server URL"></Column>
 					<Column body={renderSwitch} header="Connection Status"></Column>
 				</DataTable>
-				<div className="d-grid gap-2">
+				<div className={styles.buttonDiv}>
 					<Tooltip target=".linkButton"></Tooltip>
 					<Button
 						className="linkButton"
