@@ -1,5 +1,5 @@
 # UPRI-SEISMO-rShake-front-end
-This is the front-end repository for linking the rShake device to an account.
+This is the front-end repository for the rShake UPRI webapp used to (1) link device to earthquake-hub account, and (2) turn-on or turn-off data streaming from device to earthquake-hub.
 
 ### Development Setup
 #### Prerequisites:
