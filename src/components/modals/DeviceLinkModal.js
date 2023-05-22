@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Button, Dialog, Toast, Tooltip, InputText, Password } from 'primereact';
 import axios from "axios";
-import './Modal.css'
+import styles from './Modal.module.css'
 
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
@@ -91,7 +91,7 @@ function DeviceLinkModal(props) {
 			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '25vw' }} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
 				<div className="p-dialog-center p-fluid">
 					<form>
-						<div className="p-field">
+						<div className={styles.inputField}>
 							<span className="p-float-label">
 								<InputText
 									id="usernameInput"
@@ -105,7 +105,7 @@ function DeviceLinkModal(props) {
 							</span>
 						</div>
 
-						<div className="p-field">
+						<div className={styles.inputField}>
 							<span className="p-float-label">
 								<Password
 									id="passwordInput"

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Button, Dialog, Toast, Tooltip, InputText } from 'primereact';
 import axios from 'axios';
-import './Modal.css'
+import styles from './Modal.module.css'
 
 function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
@@ -89,7 +89,7 @@ function AddServerModal(props) {
       >
         <div className="p-dialog-center p-fluid">
           <form>
-            <div className="p-field">
+            <div className={styles.inputField}>
               <span className="p-float-label">
                 <InputText
                   id="urlInput"
@@ -103,7 +103,7 @@ function AddServerModal(props) {
               </span>
             </div>
 
-            <div className="p-field">
+            <div className={styles.inputField}>
               <span className="p-float-label">
                 <InputText
                   id="hostNameInput"
