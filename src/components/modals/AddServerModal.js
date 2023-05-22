@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
-import { Button, Dialog, Toast, Tooltip } from 'primereact';
-import { Form, FloatingLabel } from 'react-bootstrap';
+import { Button, Dialog, Toast, Tooltip, InputText } from 'primereact';
 import axios from 'axios';
+import './Modal.css'
 
 function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
@@ -37,11 +37,18 @@ function AddServerModal(props) {
       props.close();
     } catch (error) {
       console.log(error);
+			let errorSummary = "";
+
+			if (error.code === "ERR_NETWORK") {
+				errorSummary += error.message;
+			} else if (error.response.data.message) {
+				errorSummary += error.response.data.message;
+			}
 
       toast.current.show({
         severity: 'error',
         summary: 'Add New Server Error',
-        detail: error.response.data.message,
+        detail: errorSummary,
         life: 3000,
       });
     }
@@ -71,35 +78,46 @@ function AddServerModal(props) {
     <>
       <Toast ref={toast} ></Toast>
 
-      <Dialog 
-        header="Add New Server" 
-        visible={props.show} 
-        style={{ width: '50vw' }} 
-        onHide={props.close} 
-        draggable={false} 
-        resizable={false} 
+      <Dialog
+        header="Add New Server"
+        visible={props.show}
+        style={{ width: '25vw' }}
+        onHide={props.close}
+        draggable={false}
+        resizable={false}
         footer={footerContent}
       >
-        <FloatingLabel controlId="floatingUrl" label="Server URL - https://example.com">
-          <Tooltip target=".urlInput"></Tooltip>
-          <Form.Control
-            className="urlInput"
-            data-pr-tooltip="Input the URL of the ringserver you want to connect to here"
-            type="text"
-            value={inputUrl}
-            onChange={(e) => setInputUrl(e.target.value)}
-            autoFocus />
-        </FloatingLabel><br></br>
+        <div className="p-dialog-center p-fluid">
+          <form>
+            <div className="p-field">
+              <span className="p-float-label">
+                <InputText
+                  id="urlInput"
+                  data-pr-tooltip="Input the URL of the ringserver you want to connect to here"
+                  value={inputUrl}
+                  onChange={(e) => setInputUrl(e.target.value)}
+                  autoFocus
+                />
+                <label htmlFor="urlInput">Server URL</label>
+                <Tooltip target="#urlInput"></Tooltip>
+              </span>
+            </div>
 
-        <FloatingLabel controlId="serverName" label="Host Name">
-          <Tooltip target=".hostNameInput"></Tooltip>
-          <Form.Control
-            className="hostNameInput"
-            data-pr-tooltip="Input the server alias here"
-            type="text"
-            value={inputHostName}
-            onChange={(e) => setInputHostName(e.target.value)} />
-        </FloatingLabel>
+            <div className="p-field">
+              <span className="p-float-label">
+                <InputText
+                  id="hostNameInput"
+                  data-pr-tooltip="Input the server alias here"
+                  value={inputHostName}
+                  onChange={(e) => setInputHostName(e.target.value)}
+                />
+                <label htmlFor="hostNameInput">Host Name</label>
+                <Tooltip target="#hostNameInput"></Tooltip>
+              </span>
+            </div>
+
+          </form>
+        </div>
       </Dialog>
 
     </>

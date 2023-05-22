@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
-import { Button, Dialog, Toast, Tooltip } from 'primereact';
-import { Form, FloatingLabel } from 'react-bootstrap';
+import { Button, Dialog, Toast, Tooltip, InputText, Password } from 'primereact';
 import axios from "axios";
+import './Modal.module.css'
 
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
@@ -88,34 +88,39 @@ function DeviceLinkModal(props) {
 	return (
 		<>
 			<Toast ref={toast} ></Toast>
-			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '50vw' }} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
-				<Tooltip target=".usernameInput"></Tooltip>
-				<FloatingLabel
-					controlId="floatingInput"
-					label="Username"
-					className="mb-3">
-					<Form.Control 
-						className="usernameInput"
-						data-pr-tooltip="Input the username you register from the earthquake-hub website here"
-						type="text"
-						placeholder="Username"
-						value={inputUsername}
-						onChange={(e) => setInputUsername(e.target.value)}
-						required={true}
-						autoFocus />
-				</FloatingLabel>
+			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '25vw' }} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
+				<div className="p-dialog-center p-fluid">
+					<form>
+						<div className="p-field">
+							<span className="p-float-label">
+								<InputText
+									id="usernameInput"
+									data-pr-tooltip="Input your username here"
+									value={inputUsername}
+									onChange={(e) => setInputUsername(e.target.value)}
+									autoFocus
+								/>
+								<label htmlFor="usernameInput">Username</label>
+								<Tooltip target="#usernameInput"></Tooltip>
+							</span>
+						</div>
 
-				<Tooltip target=".passwordInput"></Tooltip>
-				<FloatingLabel controlId="floatingPassword" label="Password">
-					<Form.Control 
-						className="passwordInput"
-						data-pr-tooltip="Input your password here"
-						type="password"
-						placeholder="Password"
-						value={inputPassword}
-						onChange={(e) => setInputPassword(e.target.value)}
-						required />
-				</FloatingLabel>
+						<div className="p-field">
+							<span className="p-float-label">
+								<Password
+									id="passwordInput"
+									data-pr-tooltip="Input your password here"
+									value={inputPassword}
+									onChange={(e) => setInputPassword(e.target.value)}
+									toggleMask
+									feedback={false}
+								/>
+								<label htmlFor="passwordInput">Password</label>
+								<Tooltip target="#passwordInput"></Tooltip>
+							</span>
+						</div>
+					</form>
+				</div>
 			</Dialog>
 		</>
 	)
