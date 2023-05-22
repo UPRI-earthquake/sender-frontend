@@ -54,7 +54,7 @@ function AddServerModal(props) {
         label="Cancel"
         icon="pi pi-times"
         onClick={props.close}
-        rounded text raised
+        text raised
         className="p-button-text" />
       <Button 
         className="submitBtn"
@@ -63,7 +63,6 @@ function AddServerModal(props) {
         label="Add Server"
         severity="info"
         icon="pi pi-check"
-        rounded
         onClick={handleAddServerSubmit} />
     </div>
   );

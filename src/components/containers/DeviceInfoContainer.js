@@ -83,7 +83,7 @@ function DeviceInfoContainer() {
 						label="Link"
 						severity="success"
 						size="sm"
-						rounded text raised
+						text raised
 						disabled={linkButton}
 						onClick={() => setDeviceLinkModalShow(true)}
 					>
@@ -92,7 +92,7 @@ function DeviceInfoContainer() {
 						label="Unlink"
 						severity="danger"
 						size="sm"
-						rounded text raised
+						text raised
 						disabled={unlinkButton}
 						onClick={() => setDeviceUnlinkModalShow(true)}
 					>

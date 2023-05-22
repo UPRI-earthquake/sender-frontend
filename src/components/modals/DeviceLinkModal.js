@@ -62,8 +62,7 @@ function DeviceLinkModal(props) {
 			<Tooltip target=".submitBtn"></Tooltip>
 			<Button 
 				label="Cancel" 
-				icon="pi pi-times" 
-				rounded 
+				icon="pi pi-times"  
 				text 
 				raised 
 				onClick={props.close} 
@@ -73,8 +72,7 @@ function DeviceLinkModal(props) {
 				data-pr-tooltip="Submit Form"
 				data-pr-position="bottom"
 				label="Link" 
-				icon="pi pi-check" 
-				rounded 
+				icon="pi pi-check"  
 				onClick={handleDeviceLink} />
 		</div>
 	);

@@ -57,7 +57,7 @@ function ServersInfoContainer() {
 						label="Add New Server"
 						severity="success"
 						size="sm"
-						rounded text raised
+						text raised
 						onClick={() => setAddServerModalShow(true)}
 					>
 					</Button>
