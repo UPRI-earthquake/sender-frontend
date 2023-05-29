@@ -15,7 +15,6 @@ function ServersInfoContainer() {
 	const [servers, setServers] = useState([]);
 
 	const fetchServers = async () => {
-		// ServerListService.getServers().then((data) => setServers(data));
 		const backend_host = process.env.REACT_APP_BACKEND_DEV
 		const response = await axios.get(`${backend_host}/servers/getList`)
 		setServers(response.data)
@@ -48,8 +47,7 @@ function ServersInfoContainer() {
 				: `${process.env.REACT_APP_BACKEND_DEV}/device/stream/stop`
 			
 			console.log(streamingEndpoint)
-			const response = await axios.post(streamingEndpoint, payload);
-			console.log(response)
+			await axios.post(streamingEndpoint, payload);
 			
 
 			if (event.target.value) {
@@ -72,12 +70,26 @@ function ServersInfoContainer() {
 
 			fetchServers(); // reload servers list table
 		} catch (error) {
-			console.error(`Error handling toggle change: ${error}`);
+			let errorMessage = '';
+			if (error.response) {
+				// The request was made and the server responded with a status code
+				errorMessage = error.response.data.message;
+				console.error(errorMessage);
+				// Handle the error message
+			} else if (error.request) {
+				// The request was made, but no response was received
+				console.error(error.request);
+				errorMessage = error.request
+			} else {
+				// Something happened in setting up the request that triggered an error
+				console.error('Error:', error.message);
+				errorMessage = error.message
+			}
 
 			toast.current.show({
 				severity: 'error',
 				summary: 'Error',
-				detail: 'Slink2dali (child process) Execution Failed',
+				detail: `${errorMessage}`,
 				life: 3000
 			});
 		}
@@ -93,7 +105,7 @@ function ServersInfoContainer() {
 				<DataTable value={servers} className="mb-2">
 					<Column field="hostName" header="Host Name"></Column>
 					<Column field="url" header="Server URL"></Column>
-					<Column body={renderSwitch} header="Connection Status"></Column>
+					<Column body={renderSwitch} header="Stream"></Column>
 				</DataTable>
 				<div className={styles.buttonDiv}>
 					<Tooltip target=".linkButton"></Tooltip>
