@@ -1,0 +1,4 @@
+.inputField:not(:last-child) {
+    margin-bottom:2rem;
+    padding-top: 2rem;
+}
