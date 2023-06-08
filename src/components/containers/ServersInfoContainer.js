@@ -13,51 +13,19 @@ function ServersInfoContainer() {
 	const [showAddServerModal, setAddServerModalShow] = useState(false);
 	const [servers, setServers] = useState([]);
 
-	// Function for start streaming
-	const startStreaming = async (url) => {
-		try {
-			const payload = {
-				url: url
-			}
-			const backend_host = process.env.NODE_ENV === 'production'
-				? process.env.REACT_APP_BACKEND_PROD
-				: process.env.REACT_APP_BACKEND_DEV;
-			const streamingEndpoint = `${backend_host}/device/stream/start`
-			const response = await axios.post(streamingEndpoint, payload);
-			console.log(response);
-		} catch (error) {
-			let errorMessage = '';
-			if (error.response) {
-				// The request was made and the server responded with a status code
-				errorMessage = error.response.data.message;
-				console.error(errorMessage);
-				// Handle the error message
-			} else if (error.request) {
-				// The request was made, but no response was received
-				console.error(error.request);
-				errorMessage = error.request
-			} else {
-				// Something happened in setting up the request that triggered an error
-				console.error('Error:', error.message);
-				errorMessage = error.message
-			}
-
-			toast.current.show({
-				severity: 'error',
-				summary: 'Error',
-				detail: `${errorMessage}`,
-				life: 3000
-			});
-		}
-	}
-
 	const fetchServers = async () => {
 		try {
 			const backend_host = process.env.REACT_APP_BACKEND_DEV;
 			const response = await axios.get(`${backend_host}/device/stream/status`);
-			const serversList = response.data.payload;
+			const serversData = response.data.payload;
+			const serversList = Object.keys(serversData).map((url) => {
+				return {
+					hostName: serversData[url].hostName,
+					url: url,
+					status: serversData[url].status
+				};
+			});
 			setServers(serversList);
-			console.log(serversList)
 		} catch (error) {
 			console.log('Error fetching servers:', error);
 		}
@@ -67,17 +35,9 @@ function ServersInfoContainer() {
     	fetchServers();
   	}, []);
 
-	// Call startStreaming for each server
-	useEffect(() => {
-		if (servers.length > 0) {
-			servers.forEach((server) => {
-				startStreaming(server.url);
-			});
-		}
-	}, [servers]);
 
-	const handleAddServer = () => {
-		fetchServers();
+	const handleAddServer = async() => {
+		await fetchServers();
 	}
 
 	return (
