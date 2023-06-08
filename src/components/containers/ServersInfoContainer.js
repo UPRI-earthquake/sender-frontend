@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, DataTable, Column, InputSwitch, Tooltip, Panel, Toast } from 'primereact';
+import { Button, DataTable, Column, Tooltip, Panel, Toast } from 'primereact';
 import { default as AddServerModal } from './../modals/AddServerModal';
 import styles from "./ServersInfoContainer.module.css";
 
@@ -11,64 +11,17 @@ function ServersInfoContainer() {
 
 	//MODAL STATES
 	const [showAddServerModal, setAddServerModalShow] = useState(false);
-
 	const [servers, setServers] = useState([]);
 
-	const fetchServers = async () => {
-		const backend_host = process.env.REACT_APP_BACKEND_DEV
-		const response = await axios.get(`${backend_host}/servers/getList`)
-		setServers(response.data)
-	}
-
-	useEffect(() => {
-    	fetchServers();
-  	}, []);
-
-	const handleAddServer = () => {
-		fetchServers();
-	}
-
-	const renderSwitch = (rowData) => {
-		return (
-			<InputSwitch checked={rowData.isAllowedToStream}  onChange={(e) => handleToggleChange(e, rowData)}/>
-		);
-	}
-
-	// Handler for on/off (stream/stop streaming)
-	const handleToggleChange = async (event, rowData) => {
+	// Function for start streaming
+	const startStreaming = async (url) => {
 		try {
-			// TODO: POST request to /device/stream endpoint
 			const payload = {
-				url: rowData.url,
-				toggleValue: event.target.value
+				url: url
 			}
-			const streamingEndpoint = (event.target.value === true)
-				? `${process.env.REACT_APP_BACKEND_DEV}/device/stream/start`
-				: `${process.env.REACT_APP_BACKEND_DEV}/device/stream/stop`
-			
-			console.log(streamingEndpoint)
-			await axios.post(streamingEndpoint, payload);
-			
-
-			if (event.target.value) {
-				// TODO: Add Toast
-				toast.current.show({
-					severity: 'success',
-					summary: 'Slink2dali (child process) Execution Successful',
-					detail: `Device is now streaming to ${rowData.url}`,
-					life: 3000
-				});
-			} else {
-				// TODO: Add Toast
-				toast.current.show({
-					severity: 'warn',
-					summary: 'Slink2dali (child process) Exited',
-					detail: `Device stopped streaming to ${rowData.url}`,
-					life: 3000
-				});
-			}
-
-			fetchServers(); // reload servers list table
+			const streamingEndpoint = `${process.env.REACT_APP_BACKEND_DEV}/device/stream/start`
+			const response = await axios.post(streamingEndpoint, payload);
+			console.log(response);
 		} catch (error) {
 			let errorMessage = '';
 			if (error.response) {
@@ -95,6 +48,35 @@ function ServersInfoContainer() {
 		}
 	}
 
+	const fetchServers = async () => {
+		try {
+			const backend_host = process.env.REACT_APP_BACKEND_DEV;
+			const response = await axios.get(`${backend_host}/device/stream/status`);
+			const serversList = response.data.payload;
+			setServers(serversList);
+			console.log(serversList)
+		} catch (error) {
+			console.log('Error fetching servers:', error);
+		}
+	}
+
+	useEffect(() => {
+    	fetchServers();
+  	}, []);
+
+	// Call startStreaming for each server
+	useEffect(() => {
+		if (servers.length > 0) {
+			servers.forEach((server) => {
+				startStreaming(server.url);
+			});
+		}
+	}, [servers]);
+
+	const handleAddServer = () => {
+		fetchServers();
+	}
+
 	return (
     <div className={styles.serversInfo}>
 			<Toast ref={toast} ></Toast>
@@ -105,7 +87,7 @@ function ServersInfoContainer() {
 				<DataTable value={servers} className="mb-2">
 					<Column field="hostName" header="Host Name"></Column>
 					<Column field="url" header="Server URL"></Column>
-					<Column body={renderSwitch} header="Stream"></Column>
+					<Column field="status" header="Stream Status"></Column>
 				</DataTable>
 				<div className={styles.buttonDiv}>
 					<Tooltip target=".linkButton"></Tooltip>
