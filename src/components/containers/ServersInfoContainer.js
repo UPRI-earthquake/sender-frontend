@@ -19,7 +19,10 @@ function ServersInfoContainer() {
 			const payload = {
 				url: url
 			}
-			const streamingEndpoint = `${process.env.REACT_APP_BACKEND_DEV}/device/stream/start`
+			const backend_host = process.env.NODE_ENV === 'production'
+				? process.env.REACT_APP_BACKEND_PROD
+				: process.env.REACT_APP_BACKEND_DEV;
+			const streamingEndpoint = `${backend_host}/device/stream/start`
 			const response = await axios.post(streamingEndpoint, payload);
 			console.log(response);
 		} catch (error) {
