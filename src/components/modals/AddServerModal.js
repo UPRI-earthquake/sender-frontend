@@ -83,7 +83,6 @@ function AddServerModal(props) {
       <Dialog
         header="Add New Server"
         visible={props.show}
-        style={{ width: '25vw' }}
         onHide={props.close}
         draggable={false}
         resizable={false}

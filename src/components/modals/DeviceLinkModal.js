@@ -90,7 +90,7 @@ function DeviceLinkModal(props) {
 	return (
 		<>
 			<Toast ref={toast} ></Toast>
-			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '25vw' }} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
+			<Dialog header="Device-Account Link" visible={props.show} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
 				<div className="p-dialog-center p-fluid">
 					<form>
 						<div className={styles.inputField}>
