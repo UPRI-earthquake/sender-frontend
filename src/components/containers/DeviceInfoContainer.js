@@ -15,7 +15,6 @@ function DeviceInfoContainer() {
 	const [station, setStation] = useState('Not Set');
 	const [location, setLocation] = useState('Not Set');
 	const [elevation, setElevation] = useState('Not Set');
-	const [channel, setChannel] = useState('Not Set');
 	const [status, setStatus] = useState('Unlinked');
 
 	const getDeviceInfo = async () => {
@@ -31,7 +30,6 @@ function DeviceInfoContainer() {
 				setStation(response.data.station)
 				setLocation(response.data.location)
 				setElevation(response.data.elevation)
-				setChannel(response.data.channel)
 				setStatus("Linked")
 				setStatusBadgeBackground("success");
 				setStatusIcon('pi pi-check');
@@ -89,12 +87,6 @@ function DeviceInfoContainer() {
 					<div className={styles.tagContainer}>
 						<div className={styles.tagLabel}>Elevation:</div>
 						<Tag className={styles.tagValue} severity="info" value={elevation}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Channel:</div>
-						<Tag className={styles.tagValue} severity="info" value={channel}></Tag>
 					</div>
 				</div>
 				<div className={styles.elementSpacing}>
