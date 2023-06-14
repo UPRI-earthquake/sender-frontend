@@ -1,11 +1,13 @@
 .deviceInfo {
-  max-width: 500px;
-  margin-right: 16px;
+  width: 100%;
+  max-width: 700px;
+  margin: 15px;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .deviceInfo {
-    max-width: 100%; /* Adjust the maximum width for larger screens */
+    max-width: 25%; /* Adjust the maximum width for larger screens */
+    margin-right: 16px;
   }
 }
 

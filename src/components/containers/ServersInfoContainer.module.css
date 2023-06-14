@@ -1,11 +1,12 @@
 .serversInfo {
-  max-width: 800px;
+  width: 100%;
+  max-width: 900px;
+  margin: 15px;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .serversInfo {
-    max-width: 70%; /* Adjust the maximum width for larger screens */
-    margin:10px;
+    max-width: 50%; /* Adjust the maximum width for larger screens */
   }
 }
 
