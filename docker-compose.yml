@@ -6,7 +6,7 @@ services:
   sender-frontend:
     platform: linux/arm64/v8
     container_name: sender-frontend
-    image: "ghcr.io/upri-earthquake/sender-frontend:0.0.2"
+    image: "ghcr.io/upri-earthquake/sender-frontend:0.0.1-arm32v7"
     depends_on:
       - "sender-backend"
     environment:
@@ -20,7 +20,7 @@ services:
   sender-backend:
     platform: linux/arm64/v8
     container_name: sender-backend
-    image: "ghcr.io/upri-earthquake/sender-backend:0.0.3"
+    image: "ghcr.io/upri-earthquake/sender-backend:0.0.1-arm32v7"
     expose:
       - "5001"
     extra_hosts:

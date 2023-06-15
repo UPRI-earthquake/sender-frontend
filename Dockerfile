@@ -1,10 +1,10 @@
-FROM arm64v8/node:20-alpine as build
+FROM arm32v7/node:18-alpine as build
 
 WORKDIR /app
 ENV PATH /app/node-modules/.bin:$PATH
 COPY package.json ./
 COPY package-lock.json ./
-RUN npm ci 
+RUN npm ci
 #RUN npm install react-scripts@4.0.3 -g
 COPY ./src ./src
 COPY ./.env ./.env
@@ -13,7 +13,7 @@ COPY ./public ./public
 RUN npm run build
 
 # production environment, use nginx as static server
-FROM arm64v8/nginx:stable-alpine
+FROM arm32v7/nginx:stable-alpine
 
 EXPOSE 3000
 COPY nginx.conf /etc/nginx/conf.d/default.conf
