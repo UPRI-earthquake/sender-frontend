@@ -3,7 +3,7 @@
 # Constants
 SERVICE="sender-frontend.service"
 UNIT_FILE="/lib/systemd/system/$SERVICE"
-IMAGE="ghcr.io/upri-earthquake/sender-frontend:0.0.2" #TODO: Change tag to :latest
+IMAGE="ghcr.io/upri-earthquake/sender-frontend:0.0.1-arm32v7" #TODO: Change tag to :latest
 CONTAINER="sender-frontend"
 DOCKER_NETWORK="UPRI-docker-network"
 
@@ -116,7 +116,7 @@ function create_container() {
 }
 
 function start_container() {
-    if [[ $(docker container inspect --format='{{.State.Running}}' "$CONTAINER" 2>/dev/null) == "true" ]]; then
+    if [[ $(docker inspect --format='{{.State.Running}}' "$CONTAINER" 2>/dev/null) == "true" ]]; then
         echo "Container $CONTAINER is already running."
     else
         docker start "$CONTAINER"
@@ -132,7 +132,7 @@ function start_container() {
 
 ## UNINSTALL FUNCTIONS
 function stop_container() {
-    if [[ $(docker container inspect --format='{{.State.Running}}' "$CONTAINER" 2>/dev/null) == "true" ]]; then
+    if [[ $(docker inspect --format='{{.State.Running}}' "$CONTAINER" 2>/dev/null) == "true" ]]; then
         docker stop "$CONTAINER"
         if [[ $? -eq 0 ]]; then
             echo "Container $CONTAINER stopped successfully."
