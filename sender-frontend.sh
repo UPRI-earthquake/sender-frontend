@@ -7,6 +7,7 @@ IMAGE="ghcr.io/upri-earthquake/sender-frontend:0.0.2" #TODO: Change tag to :late
 CONTAINER="sender-frontend"
 DOCKER_NETWORK="UPRI-docker-network"
 
+## INSTALL FUNCTIONS
 function install_service() {
     # Check if unit-file exists
     if [[ -f "$UNIT_FILE" ]]; then
@@ -129,6 +130,7 @@ function start_container() {
     fi
 }
 
+## UNINSTALL FUNCTIONS
 function stop_container() {
     if [[ $(docker container inspect --format='{{.State.Running}}' "$CONTAINER" 2>/dev/null) == "true" ]]; then
         docker stop "$CONTAINER"
@@ -144,6 +146,81 @@ function stop_container() {
     fi
 }
 
+function remove_container() {
+    if docker inspect "$CONTAINER" >/dev/null 2>&1; then
+        docker rm "$CONTAINER"
+        if [[ $? -eq 0 ]]; then
+            echo "Container $CONTAINER removed successfully."
+            return 0
+        else
+            echo "Failed to remove container $CONTAINER."
+            return 1
+        fi
+    else
+        echo "Container $CONTAINER does not exist."
+        return 0
+    fi
+}
+
+function remove_image() {
+    if docker inspect "$IMAGE" >/dev/null 2>&1; then
+        docker rmi "$IMAGE"
+        if [[ $? -eq 0 ]]; then
+            echo "Image $IMAGE removed successfully."
+            return 0
+        else
+            echo "Failed to remove image $IMAGE."
+            return 1
+        fi
+    else
+        echo "Image $IMAGE does not exist."
+        return 0
+    fi
+}
+
+function remove_network() {
+    if docker network inspect "$DOCKER_NETWORK" >/dev/null 2>&1; then
+        docker network rm "$DOCKER_NETWORK"
+        if [[ $? -eq 0 ]]; then
+            echo "Network $DOCKER_NETWORK removed successfully."
+            return 0
+        else
+            echo "Failed to remove network $DOCKER_NETWORK."
+            return 1
+        fi
+    else
+        echo "Network $DOCKER_NETWORK does not exist."
+        return 0
+    fi
+}
+
+function uninstall_service() {
+    if [[ ! -f "$UNIT_FILE" ]]; then
+        echo "Unit file $UNIT_FILE does not exist."
+        return 0
+    fi
+
+    sudo systemctl --quiet stop "$SERVICE" >/dev/null 2>&1
+    if [[ $? -eq 1 ]]; then
+        echo "Failed to stop service $UNIT_FILE."
+        return 1
+    fi
+
+    sudo systemctl --quiet disable "$SERVICE" >/dev/null 2>&1
+    if [[ $? -eq 1 ]]; then
+        echo "Failed to disable service $UNIT_FILE."
+        return 1
+    fi
+
+    sudo rm "$UNIT_FILE"
+    if [[ $? -eq 0 ]]; then
+        echo "$SERVICE uninstalled successfully."
+        return 0
+    else
+        echo "Failed to remove unit file $UNIT_FILE."
+        return 1
+    fi
+}
 ## execute function based on argument: INSTALL_SERVICE, NETWORK_SETUP, PULL, CREATE, START, STOP
 case $1 in
     "INSTALL_SERVICE")
@@ -164,8 +241,20 @@ case $1 in
     "STOP")
         stop_container
         ;;
+    "REMOVE_CONTAINER")
+        remove_container
+        ;;
+    "REMOVE_IMAGE")
+        remove_image
+        ;;
+    "REMOVE_NETWORK")
+        remove_network
+        ;;
+    "UNINSTALL_SERVICE")
+        uninstall_service
+        ;;
     *)
-        echo "Invalid argument. Usage: ./script.sh [INSTALL_SERVICE|NETWORK_SETUP|PULL|CREATE|START|STOP]"
+        echo "Invalid argument. Usage: ./script.sh [INSTALL_SERVICE|NETWORK_SETUP|PULL|CREATE|START|STOP|REMOVE_NETWORK|REMOVE_IMAGE|REMOVE_CONTAINER|UNINSTALL_SERVICE]"
         ;;
 esac
 
