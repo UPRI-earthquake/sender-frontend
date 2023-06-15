@@ -65,36 +65,33 @@ function DeviceInfoContainer() {
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
 
 			<Panel header="Device Information">
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Network:</div>
-						<Tag className={styles.tagValue} severity="info" value={network}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Station:</div>
-						<Tag className={styles.tagValue} severity="info" value={station}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Location:</div>
-						<Tag className={styles.tagValue} severity="info" value={location}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Elevation:</div>
-						<Tag className={styles.tagValue} severity="info" value={elevation}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Device Status:</div>
-						<Tag className={styles.tagValue} icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag>
-					</div>
-				</div>
+				<table>
+					<tr>
+						<td className={styles.label}>Network</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{network}</td>
+					</tr>
+					<tr>
+						<td className={styles.label}>Station</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{station}</td>
+					</tr>
+					<tr>
+						<td className={styles.label}>Location</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{location}</td>
+					</tr>
+					<tr>
+						<td className={styles.label}>Elevation</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{elevation}</td>
+					</tr>
+					<tr>
+						<td>Device Status</td>
+						<td>:</td>
+						<td className={styles.labelValue}><Tag icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag></td>
+					</tr>
+				</table>
 
 				<div className={styles.buttonDiv}>
 					<Button

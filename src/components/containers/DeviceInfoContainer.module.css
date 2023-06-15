@@ -11,23 +11,22 @@
   }
 }
 
-.elementSpacing {
-  margin-bottom: 0.5rem;
+.label {
+  width: 20px;
 }
 
-.tagContainer {
-  display: flex;
-  align-items: center;
+.labelValue {
+  margin-left: auto;
+  text-align: center;
+  font-weight: bold;
 }
 
-.tagLabel {
-  flex-shrink: 0;
-  text-align: left;
+table {
+  width: 100%;
 }
 
-.tagValue {
-  flex-grow: 1;
-  margin-left: 1em;
+table td {
+  padding: 5px;
 }
 
 .buttonDiv {
