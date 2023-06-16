@@ -7,7 +7,6 @@ COPY package-lock.json ./
 RUN npm ci
 #RUN npm install react-scripts@4.0.3 -g
 COPY ./src ./src
-COPY ./.env ./.env
 COPY ./public ./public
 
 RUN npm run build
