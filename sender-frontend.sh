@@ -11,6 +11,7 @@ DOCKER_NETWORK="UPRI-docker-network"
 function install_service() {
     # Check if unit-file exists
     if [[ -f "$UNIT_FILE" ]]; then
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Unit file $UNIT_FILE already exists."
     else
     # Write unit-file
@@ -36,9 +37,11 @@ EOF
       systemctl daemon-reload
       systemctl --quiet enable "$SERVICE" >/dev/null 2>&1
       if [[ $? -eq 0 ]]; then
+          echo -en "[  \e[32mOK\e[0m  ] "
           echo "$SERVICE installed as an enabled service."
           return 0  # Success
       else
+          echo -en "[\e[1;31mFAILED\e[0m] "
           echo "Something went wrong in installing $SERVICE."
           return 1  # Failure
       fi
@@ -47,14 +50,17 @@ EOF
 
 function pull_container() {
     if docker inspect "$IMAGE" >/dev/null 2>&1; then
+      echo -en "[  \e[32mOK\e[0m  ] "
       echo "Image $IMAGE already exists."
       return 0 # Success
     else
       docker pull "$IMAGE"
       if [[ $? -eq 0 ]]; then
+          echo -en "[  \e[32mOK\e[0m  ] "
           echo "Image $IMAGE pulled successfully."
           return 0
       else
+          echo -en "[\e[1;31mFAILED\e[0m] "
           echo "Failed to pull image $IMAGE."
           return 1
       fi
@@ -63,6 +69,7 @@ function pull_container() {
 
 function create_network() {
     if docker network inspect "$DOCKER_NETWORK" >/dev/null 2>&1; then
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Docker network $DOCKER_NETWORK already exists."
         return 0 # Success
     else
@@ -78,9 +85,11 @@ function create_network() {
             # 3rd volume: will contain local file storage of sender-backend server
   
         if [[ $? -eq 0 ]]; then
+            echo -en "[  \e[32mOK\e[0m  ] "
             echo "Network $DOCKER_NETWORK created successfully."
             return 0
         else
+            echo -en "[\e[1;31mFAILED\e[0m] "
             echo "Failed to create network $DOCKER_NETWORK."
             return 1
         fi
@@ -90,6 +99,7 @@ function create_network() {
 
 function create_container() {
     if docker inspect "$CONTAINER" >/dev/null 2>&1; then
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Container $CONTAINER already exists."
         return 0 # Success
     else
@@ -106,9 +116,11 @@ function create_container() {
             # publish: make port of host passthrough port of container
 
         if [[ $? -eq 0 ]]; then
+            echo -en "[  \e[32mOK\e[0m  ] "
             echo "Container $CONTAINER created successfully."
             return 0
         else
+            echo -en "[\e[1;31mFAILED\e[0m] "
             echo "Failed to create container $CONTAINER."
             return 1
         fi
@@ -117,13 +129,17 @@ function create_container() {
 
 function start_container() {
     if [[ $(docker inspect --format='{{.State.Running}}' "$CONTAINER" 2>/dev/null) == "true" ]]; then
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Container $CONTAINER is already running."
+        return 0
     else
         docker start "$CONTAINER"
         if [[ $? -eq 0 ]]; then
+            echo -en "[  \e[32mOK\e[0m  ] "
             echo "Container $CONTAINER started successfully."
             return 0
         else
+            echo -en "[\e[1;31mFAILED\e[0m] "
             echo "Failed to start container $CONTAINER."
             return 1
         fi
@@ -135,14 +151,18 @@ function stop_container() {
     if [[ $(docker inspect --format='{{.State.Running}}' "$CONTAINER" 2>/dev/null) == "true" ]]; then
         docker stop "$CONTAINER"
         if [[ $? -eq 0 ]]; then
+            echo -en "[  \e[32mOK\e[0m  ] "
             echo "Container $CONTAINER stopped successfully."
             return 0
         else
+            echo -en "[\e[1;31mFAILED\e[0m] "
             echo "Failed to stop container $CONTAINER."
             return 1
         fi
     else
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Container $CONTAINER is not running."
+        return 0
     fi
 }
 
@@ -150,13 +170,16 @@ function remove_container() {
     if docker inspect "$CONTAINER" >/dev/null 2>&1; then
         docker rm "$CONTAINER"
         if [[ $? -eq 0 ]]; then
+            echo -en "[  \e[32mOK\e[0m  ] "
             echo "Container $CONTAINER removed successfully."
             return 0
         else
+            echo -en "[\e[1;31mFAILED\e[0m] "
             echo "Failed to remove container $CONTAINER."
             return 1
         fi
     else
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Container $CONTAINER does not exist."
         return 0
     fi
@@ -166,13 +189,16 @@ function remove_image() {
     if docker inspect "$IMAGE" >/dev/null 2>&1; then
         docker rmi "$IMAGE"
         if [[ $? -eq 0 ]]; then
+            echo -en "[  \e[32mOK\e[0m  ] "
             echo "Image $IMAGE removed successfully."
             return 0
         else
+            echo -en "[\e[1;31mFAILED\e[0m] "
             echo "Failed to remove image $IMAGE."
             return 1
         fi
     else
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Image $IMAGE does not exist."
         return 0
     fi
@@ -182,13 +208,16 @@ function remove_network() {
     if docker network inspect "$DOCKER_NETWORK" >/dev/null 2>&1; then
         docker network rm "$DOCKER_NETWORK"
         if [[ $? -eq 0 ]]; then
+            echo -en "[  \e[32mOK\e[0m  ] "
             echo "Network $DOCKER_NETWORK removed successfully."
             return 0
         else
+            echo -en "[\e[1;31mFAILED\e[0m] "
             echo "Failed to remove network $DOCKER_NETWORK."
             return 1
         fi
     else
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Network $DOCKER_NETWORK does not exist."
         return 0
     fi
@@ -196,31 +225,37 @@ function remove_network() {
 
 function uninstall_service() {
     if [[ ! -f "$UNIT_FILE" ]]; then
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "Unit file $UNIT_FILE does not exist."
         return 0
     fi
 
     sudo systemctl --quiet stop "$SERVICE" >/dev/null 2>&1
     if [[ $? -eq 1 ]]; then
+        echo -en "[\e[1;31mFAILED\e[0m] "
         echo "Failed to stop service $UNIT_FILE."
         return 1
     fi
 
     sudo systemctl --quiet disable "$SERVICE" >/dev/null 2>&1
     if [[ $? -eq 1 ]]; then
+        echo -en "[\e[1;31mFAILED\e[0m] "
         echo "Failed to disable service $UNIT_FILE."
         return 1
     fi
 
     sudo rm "$UNIT_FILE"
     if [[ $? -eq 0 ]]; then
+        echo -en "[  \e[32mOK\e[0m  ] "
         echo "$SERVICE uninstalled successfully."
         return 0
     else
+        echo -en "[\e[1;31mFAILED\e[0m] "
         echo "Failed to remove unit file $UNIT_FILE."
         return 1
     fi
 }
+
 ## execute function based on argument: INSTALL_SERVICE, NETWORK_SETUP, PULL, CREATE, START, STOP
 case $1 in
     "INSTALL_SERVICE")
