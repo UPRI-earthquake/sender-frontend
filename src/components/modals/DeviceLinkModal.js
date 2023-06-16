@@ -14,7 +14,9 @@ function DeviceLinkModal(props) {
 		event.preventDefault();
 
 		try {
-			const backend_host = process.env.REACT_APP_BACKEND_DEV
+			const backend_host = process.env.NODE_ENV === 'production'
+				? process.env.REACT_APP_BACKEND_PROD
+				: process.env.REACT_APP_BACKEND_DEV;
 			await axios.post(`${backend_host}/deviceLinkRequest`, {
 				username: inputUsername,
 				password: inputPassword
@@ -64,16 +66,28 @@ function DeviceLinkModal(props) {
 				label="Cancel" 
 				icon="pi pi-times"  
 				text 
-				raised 
 				onClick={props.close} 
-				className="p-button-text" />
+				style={{
+					backgroundColor: '#d1d1d1',
+					color: '#333',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+			/>
 			<Button 
 				className="submitBtn"
 				data-pr-tooltip="Submit Form"
 				data-pr-position="bottom"
 				label="Link" 
 				icon="pi pi-check"  
-				onClick={handleDeviceLink} />
+				onClick={handleDeviceLink} 
+				style={{
+					backgroundColor: '#3a6a50',
+					color: '#fff',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+			/>
 		</div>
 	);
 
@@ -88,7 +102,7 @@ function DeviceLinkModal(props) {
 	return (
 		<>
 			<Toast ref={toast} ></Toast>
-			<Dialog header="Device-Account Link" visible={props.show} style={{ width: '25vw' }} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
+			<Dialog header="Device-Account Link" visible={props.show} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
 				<div className="p-dialog-center p-fluid">
 					<form>
 						<div className={styles.inputField}>

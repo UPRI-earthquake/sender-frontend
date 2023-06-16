@@ -1,7 +1,13 @@
 .serversInfo {
-  flex: 1;
-  min-width: 550px;
-  max-width: 800px;
+  width: 100%;
+  max-width: 900px;
+  margin: 15px;
+}
+
+@media (min-width: 768px) {
+  .serversInfo {
+    max-width: 50%; /* Adjust the maximum width for larger screens */
+  }
 }
 
 .buttonDiv {

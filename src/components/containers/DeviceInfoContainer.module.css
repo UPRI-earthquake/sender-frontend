@@ -1,28 +1,32 @@
 .deviceInfo {
-  flex: 1;
-  min-width: 250px;
-  max-width: 300px;
-  margin-right: 16px;
+  width: 100%;
+  max-width: 700px;
+  margin: 15px;
 }
 
-
-.elementSpacing {
-  margin-bottom: 0.5rem;
+@media (min-width: 768px) {
+  .deviceInfo {
+    max-width: 25%; /* Adjust the maximum width for larger screens */
+    margin-right: 16px;
+  }
 }
 
-.tagContainer {
-  display: flex;
-  align-items: center;
+.label {
+  width: 20px;
 }
 
-.tagLabel {
-  flex-shrink: 0;
-  text-align: left;
+.labelValue {
+  margin-left: auto;
+  text-align: center;
+  font-weight: bold;
 }
 
-.tagValue {
-  flex-grow: 1;
-  margin-left: 1em;
+table {
+  width: 100%;
+}
+
+table td {
+  padding: 5px;
 }
 
 .buttonDiv {

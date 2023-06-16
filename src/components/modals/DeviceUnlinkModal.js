@@ -14,23 +14,38 @@ function DeviceUnlinkModal(props) {
 
 	const footerContent = (
 		<div>
-			<Button label="Cancel"
+			<Button 
+				label="Cancel"
 				icon="pi pi-times"
 				onClick={props.close}
-				rounded text raised
-				className="p-button-text" />
-			<Button label="Unlink"
+				text 
+				style={{
+					backgroundColor: '#d1d1d1',
+					color: '#333',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+			/>
+			<Button 
+				label="Unlink"
 				severity="danger"
 				icon="pi pi-check"
-				rounded
-				onClick={handleDeviceUnlink} autoFocus />
+				onClick={handleDeviceUnlink} 
+				autoFocus 
+				style={{
+					backgroundColor: '#3a6a50',
+					color: '#fff',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+			/>
 		</div>
 	);
 
 	return (
 		<>
 			<Toast ref={toast} onHide={() => window.location.reload()}></Toast>
-			<Dialog header="Device-Account Unlink" visible={props.show} style={{ width: '50vw' }} onHide={props.close} draggable={false} resizable={false} footer={footerContent}>
+			<Dialog header="Device-Account Unlink" visible={props.show} onHide={props.close} draggable={false} resizable={false} footer={footerContent}>
 				<p className="m-2">
 					Are you sure to unlink this device to account?
 				</p>

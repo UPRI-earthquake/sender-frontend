@@ -15,12 +15,13 @@ function DeviceInfoContainer() {
 	const [station, setStation] = useState('Not Set');
 	const [location, setLocation] = useState('Not Set');
 	const [elevation, setElevation] = useState('Not Set');
-	const [channel, setChannel] = useState('Not Set');
 	const [status, setStatus] = useState('Unlinked');
 
 	const getDeviceInfo = async () => {
 		try {
-			const backend_host = process.env.REACT_APP_BACKEND_DEV
+			const backend_host = process.env.NODE_ENV === 'production'
+				? process.env.REACT_APP_BACKEND_PROD
+				: process.env.REACT_APP_BACKEND_DEV;
 			const response = await axios.get(`${backend_host}/deviceInfo`)
 			console.log(response)
 			// Set device information
@@ -29,7 +30,6 @@ function DeviceInfoContainer() {
 				setStation(response.data.station)
 				setLocation(response.data.location)
 				setElevation(response.data.elevation)
-				setChannel(response.data.channel)
 				setStatus("Linked")
 				setStatusBadgeBackground("success");
 				setStatusIcon('pi pi-check');
@@ -65,60 +65,63 @@ function DeviceInfoContainer() {
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
 
 			<Panel header="Device Information">
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Network:</div>
-						<Tag className={styles.tagValue} severity="info" value={network}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Station:</div>
-						<Tag className={styles.tagValue} severity="info" value={station}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Location:</div>
-						<Tag className={styles.tagValue} severity="info" value={location}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Elevation:</div>
-						<Tag className={styles.tagValue} severity="info" value={elevation}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Channel:</div>
-						<Tag className={styles.tagValue} severity="info" value={channel}></Tag>
-					</div>
-				</div>
-				<div className={styles.elementSpacing}>
-					<div className={styles.tagContainer}>
-						<div className={styles.tagLabel}>Device Status:</div>
-						<Tag className={styles.tagValue} icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag>
-					</div>
-				</div>
+				<table>
+					<tr>
+						<td className={styles.label}>Network</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{network}</td>
+					</tr>
+					<tr>
+						<td className={styles.label}>Station</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{station}</td>
+					</tr>
+					<tr>
+						<td className={styles.label}>Location</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{location}</td>
+					</tr>
+					<tr>
+						<td className={styles.label}>Elevation</td>
+						<td>:</td>
+						<td className={styles.labelValue}>{elevation}</td>
+					</tr>
+					<tr>
+						<td>Device Status</td>
+						<td>:</td>
+						<td className={styles.labelValue}><Tag icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag></td>
+					</tr>
+				</table>
 
 				<div className={styles.buttonDiv}>
 					<Button
 						label="Link"
 						severity="success"
 						size="sm"
-						text raised
+						text
 						disabled={linkButton}
 						onClick={() => setDeviceLinkModalShow(true)}
+						style={{
+							backgroundColor: '#3a6a50',
+							color: '#fff',
+							border: 'none',
+							borderRadius: '4px'
+						}}
 					>
 					</Button>
 					<Button
 						label="Unlink"
 						severity="danger"
 						size="sm"
-						text raised
+						text
 						disabled={unlinkButton}
 						onClick={() => setDeviceUnlinkModalShow(true)}
+						style={{
+							backgroundColor: '#d1d1d1',
+							color: '#333',
+							border: 'none',
+							borderRadius: '4px'
+						}}
 					>
 					</Button>
 				</div>

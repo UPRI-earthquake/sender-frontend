@@ -15,7 +15,9 @@ function AddServerModal(props) {
 
     try {
       // Make a POST request to the server using Axios
-      const backend_host = process.env.REACT_APP_BACKEND_DEV
+      const backend_host = process.env.NODE_ENV === 'production'
+				? process.env.REACT_APP_BACKEND_PROD
+				: process.env.REACT_APP_BACKEND_DEV;
       const response = await axios.post(`${backend_host}/servers/add`, {
         hostName: inputHostName,
         url: inputUrl,
@@ -61,16 +63,29 @@ function AddServerModal(props) {
         label="Cancel"
         icon="pi pi-times"
         onClick={props.close}
-        text raised
-        className="p-button-text" />
+        text
+        className="p-button-text" 
+        style={{
+					backgroundColor: '#d1d1d1',
+					color: '#333',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+      />
       <Button 
         className="submitBtn"
         data-pr-tooltip="Submit Form"
         data-pr-position="bottom"
         label="Add Server"
-        severity="info"
         icon="pi pi-check"
-        onClick={handleAddServerSubmit} />
+        onClick={handleAddServerSubmit} 
+        style={{
+          backgroundColor: '#3a6a50',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '4px'
+        }}
+      />
     </div>
   );
 
@@ -81,7 +96,6 @@ function AddServerModal(props) {
       <Dialog
         header="Add New Server"
         visible={props.show}
-        style={{ width: '25vw' }}
         onHide={props.close}
         draggable={false}
         resizable={false}
