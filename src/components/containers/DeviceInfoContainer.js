@@ -98,18 +98,30 @@ function DeviceInfoContainer() {
 						label="Link"
 						severity="success"
 						size="sm"
-						text raised
+						text
 						disabled={linkButton}
 						onClick={() => setDeviceLinkModalShow(true)}
+						style={{
+							backgroundColor: '#3a6a50',
+							color: '#fff',
+							border: 'none',
+							borderRadius: '4px'
+						}}
 					>
 					</Button>
 					<Button
 						label="Unlink"
 						severity="danger"
 						size="sm"
-						text raised
+						text
 						disabled={unlinkButton}
 						onClick={() => setDeviceUnlinkModalShow(true)}
+						style={{
+							backgroundColor: '#d1d1d1',
+							color: '#333',
+							border: 'none',
+							borderRadius: '4px'
+						}}
 					>
 					</Button>
 				</div>

@@ -63,16 +63,29 @@ function AddServerModal(props) {
         label="Cancel"
         icon="pi pi-times"
         onClick={props.close}
-        text raised
-        className="p-button-text" />
+        text
+        className="p-button-text" 
+        style={{
+					backgroundColor: '#d1d1d1',
+					color: '#333',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+      />
       <Button 
         className="submitBtn"
         data-pr-tooltip="Submit Form"
         data-pr-position="bottom"
         label="Add Server"
-        severity="info"
         icon="pi pi-check"
-        onClick={handleAddServerSubmit} />
+        onClick={handleAddServerSubmit} 
+        style={{
+          backgroundColor: '#3a6a50',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '4px'
+        }}
+      />
     </div>
   );
 

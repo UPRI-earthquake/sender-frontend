@@ -63,8 +63,14 @@ function ServersInfoContainer() {
 						label="Add New Server"
 						severity="success"
 						size="sm"
-						text raised
+						text
 						onClick={() => setAddServerModalShow(true)}
+						style={{
+							backgroundColor: '#3a6a50',
+							color: '#fff',
+							border: 'none',
+							borderRadius: '4px'
+						}}
 					>
 					</Button>
 				</div>

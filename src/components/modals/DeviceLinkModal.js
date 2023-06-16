@@ -66,16 +66,28 @@ function DeviceLinkModal(props) {
 				label="Cancel" 
 				icon="pi pi-times"  
 				text 
-				raised 
 				onClick={props.close} 
-				className="p-button-text" />
+				style={{
+					backgroundColor: '#d1d1d1',
+					color: '#333',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+			/>
 			<Button 
 				className="submitBtn"
 				data-pr-tooltip="Submit Form"
 				data-pr-position="bottom"
 				label="Link" 
 				icon="pi pi-check"  
-				onClick={handleDeviceLink} />
+				onClick={handleDeviceLink} 
+				style={{
+					backgroundColor: '#3a6a50',
+					color: '#fff',
+					border: 'none',
+					borderRadius: '4px'
+				}}
+			/>
 		</div>
 	);
 
