@@ -3,7 +3,7 @@
 # Constants
 SERVICE="sender-frontend.service"
 UNIT_FILE="/lib/systemd/system/$SERVICE"
-IMAGE="ghcr.io/upri-earthquake/sender-frontend:0.0.1-arm32v7" #TODO: Change tag to :latest
+IMAGE="ghcr.io/upri-earthquake/sender-frontend:0.0.2-arm32v7" #TODO: Change tag to :latest
 CONTAINER="sender-frontend"
 DOCKER_NETWORK="UPRI-docker-network"
 
@@ -109,7 +109,6 @@ function create_container() {
             --volume /sys/fs/cgroup:/sys/fs/cgroup:ro \
             --net UPRI-docker-network \
             --env NGINX_PORT=3000 \
-            --env REACT_APP_BACKEND_PROD="http://rs.local:3000/api" \
             --publish 0.0.0.0:3000:3000 \
             "$IMAGE"
             # volume: workaround for docker's oci runtime error

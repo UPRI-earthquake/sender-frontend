@@ -8,6 +8,8 @@ RUN npm ci
 #RUN npm install react-scripts@4.0.3 -g
 COPY ./src ./src
 COPY ./public ./public
+# REACT_APP requires env before building react package
+COPY ./.env ./.env
 
 RUN npm run build
 
