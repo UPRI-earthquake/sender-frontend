@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, DataTable, Column, Tooltip, Panel, Toast } from 'primereact';
+import { DataTable, Column, Tooltip, Toast } from 'primereact';
 import { default as AddServerModal } from './../modals/AddServerModal';
 import styles from "./ServersInfoContainer.module.css";
 
@@ -48,33 +48,26 @@ function ServersInfoContainer() {
 
 			<AddServerModal show={showAddServerModal} close={() => setAddServerModalShow(false)} onAddServer={handleAddServer}></AddServerModal>
 
-			<Panel header="Server Information">
+      <div className={styles.panelHeader}>
+        <p>Servers Information</p>
+      </div>
+			<div className={styles.panelBody}>
 				<DataTable value={servers} className="mb-2">
 					<Column field="hostName" header="Host Name"></Column>
 					<Column field="url" header="Server URL"></Column>
 					<Column field="status" header="Stream Status"></Column>
 				</DataTable>
 				<div className={styles.buttonDiv}>
-					<Tooltip target=".linkButton"></Tooltip>
-					<Button
-						className="linkButton"
+					<Tooltip target="#addServerButton"></Tooltip>
+					<button
+            id='addServerButton'
+						className={styles.addServerButton}
 						data-pr-tooltip="Click here to open the form for adding new ringserver"
 						data-pr-position="bottom"
-						label="Add New Server"
-						severity="success"
-						size="sm"
-						text
 						onClick={() => setAddServerModalShow(true)}
-						style={{
-							backgroundColor: '#3a6a50',
-							color: '#fff',
-							border: 'none',
-							borderRadius: '4px'
-						}}
-					>
-					</Button>
+					>Add New Server</button>
 				</div>
-			</Panel>
+			</div>
 		</div>
 	);
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Tag, Button, Panel } from 'primereact';
+import { Tag } from 'primereact';
 import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 import styles from "./DeviceInfoContainer.module.css";
@@ -64,68 +64,54 @@ function DeviceInfoContainer() {
 
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
 
-			<Panel header="Device Information">
-				<table>
-					<tr>
-						<td className={styles.label}>Network</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{network}</td>
-					</tr>
-					<tr>
-						<td className={styles.label}>Station</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{station}</td>
-					</tr>
-					<tr>
-						<td className={styles.label}>Location</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{location}</td>
-					</tr>
-					<tr>
-						<td className={styles.label}>Elevation</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{elevation}</td>
-					</tr>
-					<tr>
-						<td>Device Status</td>
-						<td>:</td>
-						<td className={styles.labelValue}><Tag icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag></td>
-					</tr>
-				</table>
 
-				<div className={styles.buttonDiv}>
-					<Button
-						label="Link"
-						severity="success"
-						size="sm"
-						text
-						disabled={linkButton}
-						onClick={() => setDeviceLinkModalShow(true)}
-						style={{
-							backgroundColor: '#3a6a50',
-							color: '#fff',
-							border: 'none',
-							borderRadius: '4px'
-						}}
-					>
-					</Button>
-					<Button
-						label="Unlink"
-						severity="danger"
-						size="sm"
-						text
-						disabled={unlinkButton}
-						onClick={() => setDeviceUnlinkModalShow(true)}
-						style={{
-							backgroundColor: '#d1d1d1',
-							color: '#333',
-							border: 'none',
-							borderRadius: '4px'
-						}}
-					>
-					</Button>
-				</div>
-			</Panel>
+      <>
+        <div className={styles.panelHeader}>
+          <p>Device Information</p>
+        </div>
+        <div className={styles.panelBody}>
+          <table>
+            <tr>
+              <td className={styles.label}>Network</td>
+              <td>:</td>
+              <td className={styles.labelValue}>{network}</td>
+            </tr>
+            <tr>
+              <td className={styles.label}>Station</td>
+              <td>:</td>
+              <td className={styles.labelValue}>{station}</td>
+            </tr>
+            <tr>
+              <td className={styles.label}>Location</td>
+              <td>:</td>
+              <td className={styles.labelValue}>{location}</td>
+            </tr>
+            <tr>
+              <td className={styles.label}>Elevation</td>
+              <td>:</td>
+              <td className={styles.labelValue}>{elevation}</td>
+            </tr>
+            <tr>
+              <td>Device Status</td>
+              <td>:</td>
+              <td className={styles.labelValue}><Tag icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag></td>
+            </tr>
+          </table>
+
+          <div className={styles.buttonDiv}>
+            <button
+              className={styles.openLinkModalButton}
+              disabled={linkButton}
+              onClick={() => setDeviceLinkModalShow(true)}
+            >Link</button>
+            <button
+              className={styles.openUnlinkModalButton}
+              disabled={unlinkButton}
+              onClick={() => setDeviceUnlinkModalShow(true)}
+            >Unlink</button>
+          </div>
+        </div>
+      </>
 		</div>
 	);
 }
