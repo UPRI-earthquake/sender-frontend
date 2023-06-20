@@ -51,19 +51,37 @@ function ServersInfoContainer() {
       <div className={styles.panelHeader}>
         <p>Servers Information</p>
       </div>
-			<div className={styles.panelBody}>
-				<DataTable value={servers} className="mb-2">
-					<Column field="hostName" header="Host Name"></Column>
-					<Column field="url" header="Server URL"></Column>
-					<Column field="status" header="Stream Status"></Column>
-				</DataTable>
-				<div className={styles.buttonDiv}>
-					<Tooltip target="#addServerButton"></Tooltip>
+      <div className={styles.panelBody}>
+      <div className={styles.serversTableContainer}>
+        <table className={styles.serversTable}>
+          <thead>
+            <tr>
+              <th>Host Name</th>
+              <th>Server URL</th>
+              <th>Stream Status</th>
+            </tr>
+          </thead>
+
+          {servers.length > 0 ? (
+            servers.map((server) => (
+              <tbody>
+                <tr key={server.url}>
+                  <td>{server.hostName}</td>
+                  <td>{server.url}</td>
+                  <td>{server.status}</td>
+                </tr>
+              </tbody>
+            ))
+          ) : (
+            <tbody>
+              <tr><td>No Servers Added</td></tr>
+            </tbody>
+          )}
+        </table>
+        </div>
+        <div className={styles.buttonDiv}>
 					<button
-            id='addServerButton'
 						className={styles.addServerButton}
-						data-pr-tooltip="Click here to open the form for adding new ringserver"
-						data-pr-position="bottom"
 						onClick={() => setAddServerModalShow(true)}
 					>Add New Server</button>
 				</div>
