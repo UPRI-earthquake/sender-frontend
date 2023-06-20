@@ -79,6 +79,7 @@ function DeviceInfoContainer() {
         </div>
         <div className={styles.panelBody}>
           <table>
+            <tbody>
             <tr>
               <td className={styles.label}>Network</td>
               <td>:</td>
@@ -106,6 +107,7 @@ function DeviceInfoContainer() {
                 <p className={(status === 'Unlinked') ? styles.unlinkedLabel : styles.linkedLabel}>{status}</p>
               </td>
             </tr>
+            </tbody>
           </table>
 
             <div className={styles.buttonDiv}>

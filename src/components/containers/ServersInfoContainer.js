@@ -71,20 +71,23 @@ function ServersInfoContainer() {
           </thead>
 
           {servers.length > 0 ? (
-            servers.map((server) => (
-              <tbody>
+            <tbody>
+              {servers.map((server) => (
                 <tr key={server.url}>
                   <td>{server.hostName}</td>
                   <td>{server.url}</td>
                   <td>{server.status}</td>
                 </tr>
-              </tbody>
-            ))
+              ))}
+            </tbody>
           ) : (
             <tbody>
-              <tr><td>No Servers Added</td></tr>
+              <tr>
+                <td>No Servers Added</td>
+              </tr>
             </tbody>
           )}
+
         </table>
         </div>
         <div className={styles.buttonDiv}>
