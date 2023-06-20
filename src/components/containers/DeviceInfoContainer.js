@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Tag } from 'primereact';
 import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 import styles from "./DeviceInfoContainer.module.css";
 
 function DeviceInfoContainer() {
 	//DEVICE INFO
-	const [statusBadgeBackground, setStatusBadgeBackground] = useState('danger');
-	const [statusIcon, setStatusIcon] = useState('pi pi-times');
 	const [linkButton, setLinkButton] = useState();
 	const [unlinkButton, setUnlinkButton] = useState(true);
 	const [network, setNetwork] = useState('Not Set');
@@ -31,8 +28,6 @@ function DeviceInfoContainer() {
 				setLocation(response.data.location)
 				setElevation(response.data.elevation)
 				setStatus("Linked")
-				setStatusBadgeBackground("success");
-				setStatusIcon('pi pi-check');
 				setLinkButton(true); //disabled = true
 				setUnlinkButton(false); //enabled = false
 			} else{
@@ -94,7 +89,9 @@ function DeviceInfoContainer() {
             <tr>
               <td>Device Status</td>
               <td>:</td>
-              <td className={styles.labelValue}><Tag icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag></td>
+              <td className={styles.labelValue}>
+                <p className={(status === 'Unlinked') ? styles.unlinkedLabel : styles.linkedLabel}>{status}</p>
+              </td>
             </tr>
           </table>
 

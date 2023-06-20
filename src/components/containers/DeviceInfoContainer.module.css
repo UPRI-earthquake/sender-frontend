@@ -43,6 +43,21 @@
   font-weight: bold;
 }
 
+.linkedLabel, .unlinkedLabel {
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.linkedLabel {
+  background-color: #22C55E;
+}
+
+.unlinkedLabel {
+  background-color: #EF4444;
+}
+
 table {
   width: 100%;
 }
