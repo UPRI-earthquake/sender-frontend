@@ -57,7 +57,9 @@ function DeviceInfoContainer() {
     <div className={styles.deviceInfo}>
 			{showDeviceLinkModal && <DeviceLinkModal onModalClose={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess} />}
 
-			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
+      {showDeviceUnlinkModal && <DeviceUnlinkModal onModalClose={() => setDeviceUnlinkModalShow(false)} />}
+
+			{/* <DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal> */}
 
 
       <>
