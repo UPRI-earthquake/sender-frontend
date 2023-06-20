@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Button, Dialog, Toast, Tooltip, InputText, Password } from 'primereact';
+import { Toast } from 'primereact';
 import axios from "axios";
 import styles from './Modal.module.css'
 
@@ -57,85 +57,56 @@ function DeviceLinkModal(props) {
 			});
 		}
 	}
-	  
 
-	const footerContent = (
-		<div>
-			<Tooltip target=".submitBtn"></Tooltip>
-			<Button 
-				label="Cancel" 
-				icon="pi pi-times"  
-				text 
-				onClick={props.close} 
-				style={{
-					backgroundColor: '#d1d1d1',
-					color: '#333',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-			/>
-			<Button 
-				className="submitBtn"
-				data-pr-tooltip="Submit Form"
-				data-pr-position="bottom"
-				label="Link" 
-				icon="pi pi-check"  
-				onClick={handleDeviceLink} 
-				style={{
-					backgroundColor: '#3a6a50',
-					color: '#fff',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-			/>
-		</div>
-	);
+  const handleModalClose = (event) => {
+    event.preventDefault();
 
-	const hideModal = () => {
-		setInputUsername('');
+    setInputUsername('');
 		setInputPassword('');
-		props.close()
-	}
 
-
+    props.onModalClose();
+  }
 
 	return (
 		<>
 			<Toast ref={toast} ></Toast>
-			<Dialog header="Device-Account Link" visible={props.show} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
-				<div className="p-dialog-center p-fluid">
-					<form>
-						<div className={styles.inputField}>
-							<span className="p-float-label">
-								<InputText
-									id="usernameInput"
-									data-pr-tooltip="Input your username here"
-									value={inputUsername}
-									onChange={(e) => setInputUsername(e.target.value)}
-									autoFocus
-								/>
-								<label htmlFor="usernameInput">Username</label>
-								<Tooltip target="#usernameInput"></Tooltip>
-							</span>
-						</div>
 
-						<div className={styles.inputField}>
-							<span className="p-float-label">
-								<Password
-									id="passwordInput"
-									data-pr-tooltip="Input your password here"
-									value={inputPassword}
-									onChange={(e) => setInputPassword(e.target.value)}
-									toggleMask
-									feedback={false}
-								/>
-								<label htmlFor="passwordInput">Password</label>
-								<Tooltip target="#passwordInput"></Tooltip>
-							</span>
-						</div>
-					</form>
-				</div>
-			</Dialog>
+      <div className={styles.modalOverlay}>
+        <div className={styles.modal}>
+          <form>
+            <div className={styles.modalHeader}>
+              Device-to-Account Link
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  value={inputUsername}
+                  onChange={(e) => setInputUsername(e.target.value)}
+                  autoFocus
+                />
+                <label className={styles.inputLabel}>Username</label>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                type="password"
+                  className={styles.modalInput}
+                  value={inputPassword}
+                  onChange={(e) => setInputPassword(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Password</label>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
+              <button className={styles.submitBtn} onClick={handleDeviceLink}>Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
 		</>
 	)
 }

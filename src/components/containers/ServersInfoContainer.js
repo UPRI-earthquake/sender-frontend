@@ -46,7 +46,7 @@ function ServersInfoContainer() {
     <div className={styles.serversInfo}>
 			<Toast ref={toast} ></Toast>
 
-			<AddServerModal show={showAddServerModal} close={() => setAddServerModalShow(false)} onAddServer={handleAddServer}></AddServerModal>
+      {showAddServerModal && <AddServerModal onModalClose={() => setAddServerModalShow(false)} onAddServer={handleAddServer} />}
 
       <div className={styles.panelHeader}>
         <p>Servers Information</p>

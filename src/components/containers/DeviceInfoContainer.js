@@ -60,7 +60,7 @@ function DeviceInfoContainer() {
 
 	return (
     <div className={styles.deviceInfo}>
-			<DeviceLinkModal show={showDeviceLinkModal} close={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess}></DeviceLinkModal>
+			{showDeviceLinkModal && <DeviceLinkModal onModalClose={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess} />}
 
 			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
 
@@ -98,18 +98,18 @@ function DeviceInfoContainer() {
             </tr>
           </table>
 
-          <div className={styles.buttonDiv}>
-            <button
-              className={styles.openLinkModalButton}
-              disabled={linkButton}
-              onClick={() => setDeviceLinkModalShow(true)}
-            >Link</button>
-            <button
-              className={styles.openUnlinkModalButton}
-              disabled={unlinkButton}
-              onClick={() => setDeviceUnlinkModalShow(true)}
-            >Unlink</button>
-          </div>
+            <div className={styles.buttonDiv}>
+              <button
+                className={styles.openLinkModalButton}
+                disabled={linkButton}
+                onClick={() => setDeviceLinkModalShow(true)}
+              >Link</button>
+              <button
+                className={styles.openUnlinkModalButton}
+                disabled={unlinkButton}
+                onClick={() => setDeviceUnlinkModalShow(true)}
+              >Unlink</button>
+            </div>
         </div>
       </>
 		</div>

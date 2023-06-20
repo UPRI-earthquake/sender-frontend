@@ -82,6 +82,5 @@ table td {
 }
 
 button:disabled {
-  opacity: 75%;
   cursor: not-allowed;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Button, Dialog, Toast, Tooltip, InputText } from 'primereact';
+import { Toast } from 'primereact';
 import axios from 'axios';
 import styles from './Modal.module.css'
 
@@ -56,83 +56,50 @@ function AddServerModal(props) {
     }
   };
 
-  const footerContent = (
-    <div>
-      <Tooltip target=".submitBtn"></Tooltip>
-      <Button 
-        label="Cancel"
-        icon="pi pi-times"
-        onClick={props.close}
-        text
-        className="p-button-text" 
-        style={{
-					backgroundColor: '#d1d1d1',
-					color: '#333',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-      />
-      <Button 
-        className="submitBtn"
-        data-pr-tooltip="Submit Form"
-        data-pr-position="bottom"
-        label="Add Server"
-        icon="pi pi-check"
-        onClick={handleAddServerSubmit} 
-        style={{
-          backgroundColor: '#3a6a50',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px'
-        }}
-      />
-    </div>
-  );
+  const handleModalClose = (event) => {
+    event.preventDefault();
+
+    props.onModalClose();
+  }
 
   return (
     <>
       <Toast ref={toast} ></Toast>
 
-      <Dialog
-        header="Add New Server"
-        visible={props.show}
-        onHide={props.close}
-        draggable={false}
-        resizable={false}
-        footer={footerContent}
-      >
-        <div className="p-dialog-center p-fluid">
+      <div className={styles.modalOverlay}>
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            Add Ringserver
+          </div>
           <form>
-            <div className={styles.inputField}>
-              <span className="p-float-label">
-                <InputText
-                  id="urlInput"
-                  data-pr-tooltip="Input the URL of the ringserver you want to connect to here"
+            <div className={styles.modalBody}>
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
                   value={inputUrl}
                   onChange={(e) => setInputUrl(e.target.value)}
                   autoFocus
                 />
-                <label htmlFor="urlInput">Server URL</label>
-                <Tooltip target="#urlInput"></Tooltip>
-              </span>
-            </div>
+                <label className={styles.inputLabel}>Ringserver URL</label>
+              </div>
 
-            <div className={styles.inputField}>
-              <span className="p-float-label">
-                <InputText
-                  id="hostNameInput"
-                  data-pr-tooltip="Input the server alias here"
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
                   value={inputHostName}
                   onChange={(e) => setInputHostName(e.target.value)}
                 />
-                <label htmlFor="hostNameInput">Host Name</label>
-                <Tooltip target="#hostNameInput"></Tooltip>
-              </span>
+                <label className={styles.inputLabel}>Host Name</label>
+              </div>
             </div>
 
+            <div className={styles.modalFooter}>
+              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
+              <button className={styles.submitBtn} onClick={handleAddServerSubmit}>Submit</button>
+            </div>
           </form>
         </div>
-      </Dialog>
+      </div>
 
     </>
   )
