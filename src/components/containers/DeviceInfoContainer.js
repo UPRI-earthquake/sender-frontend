@@ -3,6 +3,7 @@ import axios from 'axios';
 import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 import styles from "./DeviceInfoContainer.module.css";
+import Toast from '../Toast';
 
 function DeviceInfoContainer() {
 	//DEVICE INFO
@@ -13,6 +14,10 @@ function DeviceInfoContainer() {
 	const [location, setLocation] = useState('Not Set');
 	const [elevation, setElevation] = useState('Not Set');
 	const [status, setStatus] = useState('Unlinked');
+
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('success')
 
 	const getDeviceInfo = async () => {
 		try {
@@ -47,6 +52,14 @@ function DeviceInfoContainer() {
 
 	const handleOnLinkingSuccess = () => {
 		getDeviceInfo();
+
+    // Set Toast Message
+    setToastMessage('Device Successfully Linked');
+    setToastType('success');
+
+    setTimeout(() => {
+      setToastMessage('');
+    }, 5000);
 	}
 
 	//MODAL STATES
@@ -55,12 +68,10 @@ function DeviceInfoContainer() {
 
 	return (
     <div className={styles.deviceInfo}>
+      <Toast message={toastMessage} toastType={toastType}></Toast>
+
 			{showDeviceLinkModal && <DeviceLinkModal onModalClose={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess} />}
-
       {showDeviceUnlinkModal && <DeviceUnlinkModal onModalClose={() => setDeviceUnlinkModalShow(false)} />}
-
-			{/* <DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal> */}
-
 
       <>
         <div className={styles.panelHeader}>

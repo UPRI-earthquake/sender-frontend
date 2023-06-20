@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Toast } from 'primereact';
+import React, { useState } from "react";
+import Toast from "../Toast.js";
 import axios from 'axios';
 import styles from './Modal.module.css'
 
@@ -7,7 +7,10 @@ function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
   const [inputUrl, setInputUrl] = useState('');
   const [inputHostName, setInputHostName] = useState('');
-  const toast = useRef(null); //TOAST
+
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('error')
 
   //HANDLE ADD SERVER FORM SUBMIT
   const handleAddServerSubmit = async (event) => {
@@ -27,16 +30,9 @@ function AddServerModal(props) {
       setInputUrl('');
       setInputHostName('');
 
-      toast.current.show({
-        severity: 'success',
-        summary: 'Add New Server Success',
-        detail: 'New Server Added',
-        life: 3000
-      });
-
-      // Call onAddServer prop
-      props.onAddServer();
-      props.close();
+      // Call onAddServerSuccess prop
+      props.onAddServerSuccess();
+      props.onModalClose();
     } catch (error) {
       console.log(error);
 			let errorSummary = "";
@@ -45,14 +41,11 @@ function AddServerModal(props) {
 				errorSummary += error.message;
 			} else if (error.response.data.message) {
 				errorSummary += error.response.data.message;
-			}
+			} 
 
-      toast.current.show({
-        severity: 'error',
-        summary: 'Add New Server Error',
-        detail: errorSummary,
-        life: 3000,
-      });
+      // Set Toast Content
+      setToastType('error');
+      setToastMessage(`Add New Server Error: ${errorSummary}`);
     }
   };
 
@@ -64,9 +57,9 @@ function AddServerModal(props) {
 
   return (
     <>
-      <Toast ref={toast} ></Toast>
+      <Toast message={toastMessage} toastType={toastType}></Toast>
 
-      <div className={styles.modalOverlay}>
+      <div className={styles.modalOverlay}> 
         <div className={styles.modal}>
           <div className={styles.modalHeader}>
             Add Ringserver

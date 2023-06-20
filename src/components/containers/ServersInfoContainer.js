@@ -1,17 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Toast } from 'primereact';
+import React, { useEffect, useState } from 'react';
 import { default as AddServerModal } from './../modals/AddServerModal';
 import styles from "./ServersInfoContainer.module.css";
+import Toast from '../Toast';
 
 import axios from 'axios';
 
 function ServersInfoContainer() {
-
-	const toast = useRef(null); //TOAST
-
 	//MODAL STATES
 	const [showAddServerModal, setAddServerModalShow] = useState(false);
 	const [servers, setServers] = useState([]);
+
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('success')
 
 	const fetchServers = async () => {
 		try {
@@ -40,13 +41,20 @@ function ServersInfoContainer() {
 
 	const handleAddServer = async() => {
 		await fetchServers();
+
+    // Set Toast Message
+    setToastMessage('New Server Added');
+    setToastType('success');
+
+    setTimeout(() => {
+      setToastMessage('');
+    }, 5000);
 	}
 
 	return (
     <div className={styles.serversInfo}>
-			<Toast ref={toast} ></Toast>
-
-      {showAddServerModal && <AddServerModal onModalClose={() => setAddServerModalShow(false)} onAddServer={handleAddServer} />}
+      <Toast message={toastMessage} toastType={toastType}></Toast>
+      {showAddServerModal && <AddServerModal onModalClose={() => setAddServerModalShow(false)} onAddServerSuccess={handleAddServer} />}
 
       <div className={styles.panelHeader}>
         <p>Servers Information</p>

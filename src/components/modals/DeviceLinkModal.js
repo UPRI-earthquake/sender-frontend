@@ -1,13 +1,16 @@
-import React, { useState, useRef } from "react";
-import { Toast } from 'primereact';
+import React, { useState } from "react";
 import axios from "axios";
 import styles from './Modal.module.css'
+import Toast from "../Toast.js";
 
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
-	const toast = useRef(null); //TOAST
+
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('error')
 
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceLink = async (event) => {
@@ -24,17 +27,12 @@ function DeviceLinkModal(props) {
 
 			setInputUsername('');
 			setInputPassword('');
-			toast.current.show({
-				severity: 'success',
-				summary: 'Linking Success',
-				detail: 'Device Link Request Successful',
-				life: 3000
-			});
+			
 
 			// Call onLinkingSuccess prop
 			props.onLinkingSuccess();
-			props.close();
-
+      props.onModalClose();
+      
 		} catch (error) {
 			console.log(error);
 			let errorSummary = "";
@@ -49,12 +47,9 @@ function DeviceLinkModal(props) {
 				errorSummary += error.response.data.message;
 			}
 
-			toast.current.show({
-				severity: 'error',
-				summary: 'Device Linking Failed',
-				detail: errorSummary,
-				life: 3000
-			});
+      // Set Toast Content
+      setToastType('error');
+      setToastMessage(`Device Linking Error: ${errorSummary}`);
 		}
 	}
 
@@ -69,7 +64,7 @@ function DeviceLinkModal(props) {
 
 	return (
 		<>
-			<Toast ref={toast} ></Toast>
+			<Toast message={toastMessage} toastType={toastType}></Toast>
 
       <div className={styles.modalOverlay}>
         <div className={styles.modal}>
