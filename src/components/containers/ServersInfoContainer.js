@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { DataTable, Column, Tooltip, Toast } from 'primereact';
+import { Toast } from 'primereact';
 import { default as AddServerModal } from './../modals/AddServerModal';
 import styles from "./ServersInfoContainer.module.css";
 
