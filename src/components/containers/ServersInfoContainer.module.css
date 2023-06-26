@@ -6,12 +6,12 @@
 
 @media (min-width: 768px) {
   .serversInfo {
-    max-width: 50%; /* Adjust the maximum width for larger screens */
+    max-width: 50%;
   }
 }
 
 .panelHeader {
-  border: 1px solid #dee2e6 ;
+  border: 1px solid #dee2e6;
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
   background: #f8f9fa;
@@ -39,7 +39,7 @@
 }
 
 .addServerButton {
-  background-color: #3a6a50;  
+  background-color: #3a6a50;
   color: #fff;
   width: 200px;
   padding: 10px;

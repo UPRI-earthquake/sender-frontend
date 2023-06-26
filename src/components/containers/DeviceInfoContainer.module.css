@@ -6,13 +6,13 @@
 
 @media (min-width: 768px) {
   .deviceInfo {
-    max-width: 25%; /* Adjust the maximum width for larger screens */
+    max-width: 25%;
     margin-right: 16px;
   }
 }
 
 .panelHeader {
-  border: 1px solid #dee2e6 ;
+  border: 1px solid #dee2e6;
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
   background: #f8f9fa;
@@ -43,7 +43,8 @@
   font-weight: bold;
 }
 
-.linkedLabel, .unlinkedLabel {
+.linkedLabel,
+.unlinkedLabel {
   color: #ffffff;
   border: none;
   border-radius: 4px;
@@ -77,7 +78,7 @@ table td {
 }
 
 .openLinkModalButton {
-  background-color: #3a6a50;  
+  background-color: #3a6a50;
   color: #fff;
   width: 100px;
   padding: 10px;

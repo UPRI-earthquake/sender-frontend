@@ -8,13 +8,13 @@ import ServersInfoContainer from './components/containers/ServersInfoContainer';
 
 function App() {
   return (
-  <>
+    <>
       <Header />
       <Body>
         <DeviceInfoContainer />
         <ServersInfoContainer />
       </Body>
-  </>
+    </>
   );
 }
 
