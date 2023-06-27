@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Toast from "../Toast.js";
 import axios from 'axios';
 import styles from './Modal.module.css'
@@ -7,6 +7,23 @@ function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
   const [inputUrl, setInputUrl] = useState('');
   const [inputHostName, setInputHostName] = useState('');
+  const modalRef = useRef(null);
+
+  // ENTRANCE ANIMATION
+  useEffect(() => {
+    const modalEl = modalRef.current;
+    modalEl.classList.remove(styles.hidden);
+    modalEl.animate(
+      [
+        { opacity: 0, transform: 'scale(0.7)' },
+        { opacity: 1, transform: 'scale(1)' }
+      ],
+      {
+        duration: 150,
+        easing: 'cubic-bezier(0, 0, 0.5, 1)'
+      }
+    );
+  }, []);
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
@@ -60,7 +77,7 @@ function AddServerModal(props) {
       <Toast message={toastMessage} toastType={toastType}></Toast>
 
       <div className={styles.modalOverlay}> 
-        <div className={styles.modal}>
+        <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
           <div className={styles.modalHeader}>
             Add Ringserver
           </div>

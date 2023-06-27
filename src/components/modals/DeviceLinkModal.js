@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import styles from './Modal.module.css'
 import Toast from "../Toast.js";
@@ -7,6 +7,23 @@ function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
+  const modalRef = useRef(null);
+
+  // ENTRANCE ANIMATION
+  useEffect(() => {
+    const modalEl = modalRef.current;
+    modalEl.classList.remove(styles.hidden);
+    modalEl.animate(
+      [
+        { opacity: 0, transform: 'scale(0.7)' },
+        { opacity: 1, transform: 'scale(1)' }
+      ],
+      {
+        duration: 150,
+        easing: 'cubic-bezier(0, 0, 0.5, 1)'
+      }
+    );
+  }, []);
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
@@ -67,7 +84,7 @@ function DeviceLinkModal(props) {
 			<Toast message={toastMessage} toastType={toastType}></Toast>
 
       <div className={styles.modalOverlay}>
-        <div className={styles.modal}>
+        <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
           <form>
             <div className={styles.modalHeader}>
               Device-to-Account Link

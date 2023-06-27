@@ -17,6 +17,10 @@
   align-items: center;  
 }
 
+.hidden {
+  opacity: 0;
+}
+
 .modal {
   background-color: #fff;
   padding: 20px;
