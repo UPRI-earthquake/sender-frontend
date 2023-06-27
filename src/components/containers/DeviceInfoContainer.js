@@ -1,133 +1,131 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Tag, Button, Panel } from 'primereact';
 import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 import styles from "./DeviceInfoContainer.module.css";
+import Toast from '../Toast';
 
 function DeviceInfoContainer() {
-	//DEVICE INFO
-	const [statusBadgeBackground, setStatusBadgeBackground] = useState('danger');
-	const [statusIcon, setStatusIcon] = useState('pi pi-times');
-	const [linkButton, setLinkButton] = useState();
-	const [unlinkButton, setUnlinkButton] = useState(true);
-	const [network, setNetwork] = useState('Not Set');
-	const [station, setStation] = useState('Not Set');
-	const [location, setLocation] = useState('Not Set');
-	const [elevation, setElevation] = useState('Not Set');
-	const [status, setStatus] = useState('Unlinked');
+  //DEVICE INFO
+  const [linkButton, setLinkButton] = useState();
+  const [unlinkButton, setUnlinkButton] = useState(true);
+  const [network, setNetwork] = useState('Not Set');
+  const [station, setStation] = useState('Not Set');
+  const [location, setLocation] = useState('Not Set');
+  const [elevation, setElevation] = useState('Not Set');
+  const [status, setStatus] = useState('Not Linked');
 
-	const getDeviceInfo = async () => {
-		try {
-			const backend_host = process.env.NODE_ENV === 'production'
-				? process.env.REACT_APP_BACKEND_PROD
-				: process.env.REACT_APP_BACKEND_DEV;
-			const response = await axios.get(`${backend_host}/deviceInfo`)
-			console.log(response)
-			// Set device information
-			if (response.data.streamId != null) {
-				setNetwork(response.data.network)
-				setStation(response.data.station)
-				setLocation(response.data.location)
-				setElevation(response.data.elevation)
-				setStatus("Linked")
-				setStatusBadgeBackground("success");
-				setStatusIcon('pi pi-check');
-				setLinkButton(true); //disabled = true
-				setUnlinkButton(false); //enabled = false
-			} else{
-				setStatus("Unlinked")
-				setLinkButton(false); //disabled = false
-				setUnlinkButton(true); //disabled = true
-			}
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('success')
 
-		} catch (error) {
-			console.log("Axios Error: " + error)
-		}
-	}
+  const getDeviceInfo = async () => {
+    try {
+      const backend_host = process.env.NODE_ENV === 'production'
+        ? process.env.REACT_APP_BACKEND_PROD
+        : process.env.REACT_APP_BACKEND_DEV;
+      const response = await axios.get(`${backend_host}/deviceInfo`)
+      console.log(response)
+      // Set device information
+      if (response.data.streamId != null) {
+        setNetwork(response.data.network)
+        setStation(response.data.station)
+        setLocation(response.data.location)
+        setElevation(response.data.elevation)
+        setStatus("Linked")
+        setLinkButton(true); //disabled = true
+        setUnlinkButton(false); //enabled = false
+      } else {
+        setStatus("Not Linked")
+        setLinkButton(false); //disabled = false
+        setUnlinkButton(true); //disabled = true
+      }
 
-	useEffect(() => {
-		getDeviceInfo()
-	}, [])
+    } catch (error) {
+      console.log("Axios Error: " + error)
+    }
+  }
 
-	const handleOnLinkingSuccess = () => {
-		getDeviceInfo();
-	}
+  useEffect(() => {
+    getDeviceInfo()
+  }, [])
 
-	//MODAL STATES
-	const [showDeviceLinkModal, setDeviceLinkModalShow] = useState(false);
-	const [showDeviceUnlinkModal, setDeviceUnlinkModalShow] = useState(false);
+  const handleOnLinkingSuccess = () => {
+    getDeviceInfo();
 
-	return (
+    // Set Toast Message
+    setToastMessage('Device Successfully Linked');
+    setToastType('success');
+
+    setTimeout(() => {
+      setToastMessage('');
+    }, 5000);
+  }
+
+  //MODAL STATES
+  const [showDeviceLinkModal, setDeviceLinkModalShow] = useState(false);
+  const [showDeviceUnlinkModal, setDeviceUnlinkModalShow] = useState(false);
+
+  return (
     <div className={styles.deviceInfo}>
-			<DeviceLinkModal show={showDeviceLinkModal} close={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess}></DeviceLinkModal>
+      <Toast message={toastMessage} toastType={toastType}></Toast>
 
-			<DeviceUnlinkModal show={showDeviceUnlinkModal} close={() => setDeviceUnlinkModalShow(false)}></DeviceUnlinkModal>
+      {showDeviceLinkModal && <DeviceLinkModal onModalClose={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess} />}
+      {showDeviceUnlinkModal && <DeviceUnlinkModal onModalClose={() => setDeviceUnlinkModalShow(false)} />}
 
-			<Panel header="Device Information">
-				<table>
-					<tr>
-						<td className={styles.label}>Network</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{network}</td>
-					</tr>
-					<tr>
-						<td className={styles.label}>Station</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{station}</td>
-					</tr>
-					<tr>
-						<td className={styles.label}>Location</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{location}</td>
-					</tr>
-					<tr>
-						<td className={styles.label}>Elevation</td>
-						<td>:</td>
-						<td className={styles.labelValue}>{elevation}</td>
-					</tr>
-					<tr>
-						<td>Device Status</td>
-						<td>:</td>
-						<td className={styles.labelValue}><Tag icon={statusIcon} severity={statusBadgeBackground} value={status}></Tag></td>
-					</tr>
-				</table>
+      <>
+        <div className={styles.panelHeader}>
+          <p>Device Information</p>
+        </div>
+        <div className={styles.panelBody}>
+          <table>
+            <tbody>
+              <tr>
+                <td className={styles.label}>Network</td>
+                <td>:</td>
+                <td className={styles.labelValue}>{network}</td>
+              </tr>
+              <tr>
+                <td className={styles.label}>Station</td>
+                <td>:</td>
+                <td className={styles.labelValue}>{station}</td>
+              </tr>
+              <tr>
+                <td className={styles.label}>Location</td>
+                <td>:</td>
+                <td className={styles.labelValue}>{location}</td>
+              </tr>
+              <tr>
+                <td className={styles.label}>Elevation</td>
+                <td>:</td>
+                <td className={styles.labelValue}>{elevation}</td>
+              </tr>
+              <tr>
+                <td>Device Status</td>
+                <td>:</td>
+                <td className={styles.labelValue}>
+                  <p className={(status === 'Not Linked') ? styles.unlinkedLabel : styles.linkedLabel}>{status}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-				<div className={styles.buttonDiv}>
-					<Button
-						label="Link"
-						severity="success"
-						size="sm"
-						text
-						disabled={linkButton}
-						onClick={() => setDeviceLinkModalShow(true)}
-						style={{
-							backgroundColor: '#3a6a50',
-							color: '#fff',
-							border: 'none',
-							borderRadius: '4px'
-						}}
-					>
-					</Button>
-					<Button
-						label="Unlink"
-						severity="danger"
-						size="sm"
-						text
-						disabled={unlinkButton}
-						onClick={() => setDeviceUnlinkModalShow(true)}
-						style={{
-							backgroundColor: '#d1d1d1',
-							color: '#333',
-							border: 'none',
-							borderRadius: '4px'
-						}}
-					>
-					</Button>
-				</div>
-			</Panel>
-		</div>
-	);
+          <div className={styles.buttonDiv}>
+            <button
+              className={styles.openLinkModalButton}
+              disabled={linkButton}
+              onClick={() => setDeviceLinkModalShow(true)}
+            >Link</button>
+            <button
+              className={styles.openUnlinkModalButton}
+              disabled={unlinkButton}
+              onClick={() => setDeviceUnlinkModalShow(true)}
+            >Unlink</button>
+          </div>
+        </div>
+      </>
+    </div>
+  );
 }
 
 export default DeviceInfoContainer;

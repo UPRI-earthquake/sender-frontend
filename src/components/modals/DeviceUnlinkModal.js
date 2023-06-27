@@ -1,55 +1,56 @@
-import React, { useRef } from "react";
-import { Button, Dialog, Toast } from 'primereact';
+import React, { useEffect, useRef } from "react";
+import styles from './Modal.module.css'
 
 function DeviceUnlinkModal(props) {
-	const toast = useRef(null); //TOAST
+
+  const modalRef = useRef(null);
+
+  // ENTRANCE ANIMATION
+  useEffect(() => {
+    const modalEl = modalRef.current;
+    modalEl.classList.remove(styles.hidden);
+    modalEl.animate(
+      [
+        { opacity: 0, transform: 'scale(0.7)' },
+        { opacity: 1, transform: 'scale(1)' }
+      ],
+      {
+        duration: 150,
+        easing: 'cubic-bezier(0, 0, 0.5, 1)'
+      }
+    );
+  }, []);
 
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceUnlink = (event) => {
 		event.preventDefault();
 		// TODO: unlink device codeflow
-
-		// toast.current.show({ severity: 'success', summary: 'Unlinking Success', detail: 'Device-Account Unlinked', life: 3000 });
 	}
 
-	const footerContent = (
-		<div>
-			<Button 
-				label="Cancel"
-				icon="pi pi-times"
-				onClick={props.close}
-				text 
-				style={{
-					backgroundColor: '#d1d1d1',
-					color: '#333',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-			/>
-			<Button 
-				label="Unlink"
-				severity="danger"
-				icon="pi pi-check"
-				onClick={handleDeviceUnlink} 
-				autoFocus 
-				style={{
-					backgroundColor: '#3a6a50',
-					color: '#fff',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-			/>
-		</div>
-	);
+  const handleModalClose = (event) => {
+    event.preventDefault();
+
+    props.onModalClose();
+  }
 
 	return (
 		<>
-			<Toast ref={toast} onHide={() => window.location.reload()}></Toast>
-			<Dialog header="Device-Account Unlink" visible={props.show} onHide={props.close} draggable={false} resizable={false} footer={footerContent}>
-				<p className="m-2">
-					Are you sure to unlink this device to account?
-				</p>
-			</Dialog>
+      <div className={styles.modalOverlay}>
+        <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
+          <div className={styles.modalHeader}>
+            Unlink Device-to-Account
+          </div>
+
+          <div>
+            <p>Are you sure to unlink this device to account?</p>
+          </div>
+
+          <div className={styles.modalFooter}>
+            <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
+            <button className={styles.submitBtn} onClick={handleDeviceUnlink}>Submit</button>
+          </div>
+        </div>
+      </div>
 		</>
 	)
 }

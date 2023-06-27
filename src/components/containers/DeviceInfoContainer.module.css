@@ -1,14 +1,37 @@
 .deviceInfo {
   width: 100%;
   max-width: 700px;
+  min-width: 235px;
   margin: 15px;
 }
 
 @media (min-width: 768px) {
   .deviceInfo {
-    max-width: 25%; /* Adjust the maximum width for larger screens */
+    max-width: 25%;
     margin-right: 16px;
   }
+}
+
+.panelHeader {
+  border: 1px solid #dee2e6;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  background: #f8f9fa;
+  padding: 1.25rem;
+}
+
+.panelHeader p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.panelBody {
+  padding: 1.25rem;
+  border: 1px solid #dee2e6;
+  background: #ffffff;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-top: 0 none;
 }
 
 .label {
@@ -19,6 +42,22 @@
   margin-left: auto;
   text-align: center;
   font-weight: bold;
+}
+
+.linkedLabel,
+.unlinkedLabel {
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.linkedLabel {
+  background-color: #5cb85c;
+}
+
+.unlinkedLabel {
+  background-color: #EF4444;
 }
 
 table {
@@ -37,4 +76,28 @@ table td {
 
 .buttonDiv button:not(:last-child) {
   margin-right: 1em;
+}
+
+.openLinkModalButton {
+  background-color: #3a6a50;
+  color: #fff;
+  width: 100px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.openUnlinkModalButton {
+  background-color: #d1d1d1;
+  color: #333;
+  padding: 10px;
+  width: 100px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }

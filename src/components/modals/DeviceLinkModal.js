@@ -1,13 +1,33 @@
-import React, { useState, useRef } from "react";
-import { Button, Dialog, Toast, Tooltip, InputText, Password } from 'primereact';
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import styles from './Modal.module.css'
+import Toast from "../Toast.js";
 
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
-	const toast = useRef(null); //TOAST
+  const modalRef = useRef(null);
+
+  // ENTRANCE ANIMATION
+  useEffect(() => {
+    const modalEl = modalRef.current;
+    modalEl.classList.remove(styles.hidden);
+    modalEl.animate(
+      [
+        { opacity: 0, transform: 'scale(0.7)' },
+        { opacity: 1, transform: 'scale(1)' }
+      ],
+      {
+        duration: 150,
+        easing: 'cubic-bezier(0, 0, 0.5, 1)'
+      }
+    );
+  }, []);
+
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('error')
 
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceLink = async (event) => {
@@ -24,17 +44,12 @@ function DeviceLinkModal(props) {
 
 			setInputUsername('');
 			setInputPassword('');
-			toast.current.show({
-				severity: 'success',
-				summary: 'Linking Success',
-				detail: 'Device Link Request Successful',
-				life: 3000
-			});
+			
 
 			// Call onLinkingSuccess prop
 			props.onLinkingSuccess();
-			props.close();
-
+      props.onModalClose();
+      
 		} catch (error) {
 			console.log(error);
 			let errorSummary = "";
@@ -49,93 +64,61 @@ function DeviceLinkModal(props) {
 				errorSummary += error.response.data.message;
 			}
 
-			toast.current.show({
-				severity: 'error',
-				summary: 'Device Linking Failed',
-				detail: errorSummary,
-				life: 3000
-			});
+      // Set Toast Content
+      setToastType('error');
+      setToastMessage(`Device Linking Error: ${errorSummary}`);
 		}
 	}
-	  
 
-	const footerContent = (
-		<div>
-			<Tooltip target=".submitBtn"></Tooltip>
-			<Button 
-				label="Cancel" 
-				icon="pi pi-times"  
-				text 
-				onClick={props.close} 
-				style={{
-					backgroundColor: '#d1d1d1',
-					color: '#333',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-			/>
-			<Button 
-				className="submitBtn"
-				data-pr-tooltip="Submit Form"
-				data-pr-position="bottom"
-				label="Link" 
-				icon="pi pi-check"  
-				onClick={handleDeviceLink} 
-				style={{
-					backgroundColor: '#3a6a50',
-					color: '#fff',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-			/>
-		</div>
-	);
+  const handleModalClose = (event) => {
+    event.preventDefault();
 
-	const hideModal = () => {
-		setInputUsername('');
+    setInputUsername('');
 		setInputPassword('');
-		props.close()
-	}
 
-
+    props.onModalClose();
+  }
 
 	return (
 		<>
-			<Toast ref={toast} ></Toast>
-			<Dialog header="Device-Account Link" visible={props.show} onHide={hideModal} draggable={false} resizable={false} footer={footerContent}>
-				<div className="p-dialog-center p-fluid">
-					<form>
-						<div className={styles.inputField}>
-							<span className="p-float-label">
-								<InputText
-									id="usernameInput"
-									data-pr-tooltip="Input your username here"
-									value={inputUsername}
-									onChange={(e) => setInputUsername(e.target.value)}
-									autoFocus
-								/>
-								<label htmlFor="usernameInput">Username</label>
-								<Tooltip target="#usernameInput"></Tooltip>
-							</span>
-						</div>
+			<Toast message={toastMessage} toastType={toastType}></Toast>
 
-						<div className={styles.inputField}>
-							<span className="p-float-label">
-								<Password
-									id="passwordInput"
-									data-pr-tooltip="Input your password here"
-									value={inputPassword}
-									onChange={(e) => setInputPassword(e.target.value)}
-									toggleMask
-									feedback={false}
-								/>
-								<label htmlFor="passwordInput">Password</label>
-								<Tooltip target="#passwordInput"></Tooltip>
-							</span>
-						</div>
-					</form>
-				</div>
-			</Dialog>
+      <div className={styles.modalOverlay}>
+        <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
+          <form>
+            <div className={styles.modalHeader}>
+              Device-to-Account Link
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  value={inputUsername}
+                  onChange={(e) => setInputUsername(e.target.value)}
+                  autoFocus
+                />
+                <label className={styles.inputLabel}>Username</label>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                type="password"
+                  className={styles.modalInput}
+                  value={inputPassword}
+                  onChange={(e) => setInputPassword(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Password</label>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
+              <button className={styles.submitBtn} onClick={handleDeviceLink}>Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
 		</>
 	)
 }

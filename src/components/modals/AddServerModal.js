@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Button, Dialog, Toast, Tooltip, InputText } from 'primereact';
+import React, { useState, useEffect, useRef } from "react";
+import Toast from "../Toast.js";
 import axios from 'axios';
 import styles from './Modal.module.css'
 
@@ -7,7 +7,27 @@ function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
   const [inputUrl, setInputUrl] = useState('');
   const [inputHostName, setInputHostName] = useState('');
-  const toast = useRef(null); //TOAST
+  const modalRef = useRef(null);
+
+  // ENTRANCE ANIMATION
+  useEffect(() => {
+    const modalEl = modalRef.current;
+    modalEl.classList.remove(styles.hidden);
+    modalEl.animate(
+      [
+        { opacity: 0, transform: 'scale(0.7)' },
+        { opacity: 1, transform: 'scale(1)' }
+      ],
+      {
+        duration: 150,
+        easing: 'cubic-bezier(0, 0, 0.5, 1)'
+      }
+    );
+  }, []);
+
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('error')
 
   //HANDLE ADD SERVER FORM SUBMIT
   const handleAddServerSubmit = async (event) => {
@@ -27,16 +47,9 @@ function AddServerModal(props) {
       setInputUrl('');
       setInputHostName('');
 
-      toast.current.show({
-        severity: 'success',
-        summary: 'Add New Server Success',
-        detail: 'New Server Added',
-        life: 3000
-      });
-
-      // Call onAddServer prop
-      props.onAddServer();
-      props.close();
+      // Call onAddServerSuccess prop
+      props.onAddServerSuccess();
+      props.onModalClose();
     } catch (error) {
       console.log(error);
 			let errorSummary = "";
@@ -45,94 +58,58 @@ function AddServerModal(props) {
 				errorSummary += error.message;
 			} else if (error.response.data.message) {
 				errorSummary += error.response.data.message;
-			}
+			} 
 
-      toast.current.show({
-        severity: 'error',
-        summary: 'Add New Server Error',
-        detail: errorSummary,
-        life: 3000,
-      });
+      // Set Toast Content
+      setToastType('error');
+      setToastMessage(`Add New Server Error: ${errorSummary}`);
     }
   };
 
-  const footerContent = (
-    <div>
-      <Tooltip target=".submitBtn"></Tooltip>
-      <Button 
-        label="Cancel"
-        icon="pi pi-times"
-        onClick={props.close}
-        text
-        className="p-button-text" 
-        style={{
-					backgroundColor: '#d1d1d1',
-					color: '#333',
-					border: 'none',
-					borderRadius: '4px'
-				}}
-      />
-      <Button 
-        className="submitBtn"
-        data-pr-tooltip="Submit Form"
-        data-pr-position="bottom"
-        label="Add Server"
-        icon="pi pi-check"
-        onClick={handleAddServerSubmit} 
-        style={{
-          backgroundColor: '#3a6a50',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px'
-        }}
-      />
-    </div>
-  );
+  const handleModalClose = (event) => {
+    event.preventDefault();
+
+    props.onModalClose();
+  }
 
   return (
     <>
-      <Toast ref={toast} ></Toast>
+      <Toast message={toastMessage} toastType={toastType}></Toast>
 
-      <Dialog
-        header="Add New Server"
-        visible={props.show}
-        onHide={props.close}
-        draggable={false}
-        resizable={false}
-        footer={footerContent}
-      >
-        <div className="p-dialog-center p-fluid">
+      <div className={styles.modalOverlay}> 
+        <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
+          <div className={styles.modalHeader}>
+            Add Ringserver
+          </div>
           <form>
-            <div className={styles.inputField}>
-              <span className="p-float-label">
-                <InputText
-                  id="urlInput"
-                  data-pr-tooltip="Input the URL of the ringserver you want to connect to here"
+            <div className={styles.modalBody}>
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
                   value={inputUrl}
                   onChange={(e) => setInputUrl(e.target.value)}
                   autoFocus
                 />
-                <label htmlFor="urlInput">Server URL</label>
-                <Tooltip target="#urlInput"></Tooltip>
-              </span>
-            </div>
+                <label className={styles.inputLabel}>Ringserver URL</label>
+              </div>
 
-            <div className={styles.inputField}>
-              <span className="p-float-label">
-                <InputText
-                  id="hostNameInput"
-                  data-pr-tooltip="Input the server alias here"
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
                   value={inputHostName}
                   onChange={(e) => setInputHostName(e.target.value)}
                 />
-                <label htmlFor="hostNameInput">Host Name</label>
-                <Tooltip target="#hostNameInput"></Tooltip>
-              </span>
+                <label className={styles.inputLabel}>Host Name</label>
+              </div>
             </div>
 
+            <div className={styles.modalFooter}>
+              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
+              <button className={styles.submitBtn} onClick={handleAddServerSubmit}>Submit</button>
+            </div>
           </form>
         </div>
-      </Dialog>
+      </div>
 
     </>
   )

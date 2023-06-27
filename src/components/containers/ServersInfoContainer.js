@@ -1,82 +1,104 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Button, DataTable, Column, Tooltip, Panel, Toast } from 'primereact';
+import React, { useEffect, useState } from 'react';
 import { default as AddServerModal } from './../modals/AddServerModal';
 import styles from "./ServersInfoContainer.module.css";
+import Toast from '../Toast';
 
 import axios from 'axios';
 
 function ServersInfoContainer() {
+  //MODAL STATES
+  const [showAddServerModal, setAddServerModalShow] = useState(false);
+  const [servers, setServers] = useState([]);
 
-	const toast = useRef(null); //TOAST
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('success')
 
-	//MODAL STATES
-	const [showAddServerModal, setAddServerModalShow] = useState(false);
-	const [servers, setServers] = useState([]);
+  const fetchServers = async () => {
+    try {
+      const backend_host = process.env.NODE_ENV === 'production'
+        ? process.env.REACT_APP_BACKEND_PROD
+        : process.env.REACT_APP_BACKEND_DEV;
+      const response = await axios.get(`${backend_host}/device/stream/status`);
+      const serversData = response.data.payload;
+      const serversList = Object.keys(serversData).map((url) => {
+        return {
+          hostName: serversData[url].hostName,
+          url: url,
+          status: serversData[url].status
+        };
+      });
+      setServers(serversList);
+    } catch (error) {
+      console.log('Error fetching servers:', error);
+    }
+  }
 
-	const fetchServers = async () => {
-		try {
-			const backend_host = process.env.NODE_ENV === 'production'
-				? process.env.REACT_APP_BACKEND_PROD
-				: process.env.REACT_APP_BACKEND_DEV;
-			const response = await axios.get(`${backend_host}/device/stream/status`);
-			const serversData = response.data.payload;
-			const serversList = Object.keys(serversData).map((url) => {
-				return {
-					hostName: serversData[url].hostName,
-					url: url,
-					status: serversData[url].status
-				};
-			});
-			setServers(serversList);
-		} catch (error) {
-			console.log('Error fetching servers:', error);
-		}
-	}
-
-	useEffect(() => {
-    	fetchServers();
-  	}, []);
+  useEffect(() => {
+    fetchServers();
+  }, []);
 
 
-	const handleAddServer = async() => {
-		await fetchServers();
-	}
+  const handleAddServer = async () => {
+    await fetchServers();
 
-	return (
+    // Set Toast Message
+    setToastMessage('New Server Added');
+    setToastType('success');
+
+    setTimeout(() => {
+      setToastMessage('');
+    }, 5000);
+  }
+
+  return (
     <div className={styles.serversInfo}>
-			<Toast ref={toast} ></Toast>
+      <Toast message={toastMessage} toastType={toastType}></Toast>
+      {showAddServerModal && <AddServerModal onModalClose={() => setAddServerModalShow(false)} onAddServerSuccess={handleAddServer} />}
 
-			<AddServerModal show={showAddServerModal} close={() => setAddServerModalShow(false)} onAddServer={handleAddServer}></AddServerModal>
+      <div className={styles.panelHeader}>
+        <p>Servers Information</p>
+      </div>
+      <div className={styles.panelBody}>
+        <div className={styles.serversTableContainer}>
+          <table className={styles.serversTable}>
+            <thead>
+              <tr>
+                <th>Host Name</th>
+                <th>Server URL</th>
+                <th>Stream Status</th>
+              </tr>
+            </thead>
 
-			<Panel header="Server Information">
-				<DataTable value={servers} className="mb-2">
-					<Column field="hostName" header="Host Name"></Column>
-					<Column field="url" header="Server URL"></Column>
-					<Column field="status" header="Stream Status"></Column>
-				</DataTable>
-				<div className={styles.buttonDiv}>
-					<Tooltip target=".linkButton"></Tooltip>
-					<Button
-						className="linkButton"
-						data-pr-tooltip="Click here to open the form for adding new ringserver"
-						data-pr-position="bottom"
-						label="Add New Server"
-						severity="success"
-						size="sm"
-						text
-						onClick={() => setAddServerModalShow(true)}
-						style={{
-							backgroundColor: '#3a6a50',
-							color: '#fff',
-							border: 'none',
-							borderRadius: '4px'
-						}}
-					>
-					</Button>
-				</div>
-			</Panel>
-		</div>
-	);
+            {servers.length > 0 ? (
+              <tbody>
+                {servers.map((server) => (
+                  <tr key={server.url}>
+                    <td>{server.hostName}</td>
+                    <td>{server.url}</td>
+                    <td>{server.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            ) : (
+              <tbody>
+                <tr>
+                  <td>No Servers Added</td>
+                </tr>
+              </tbody>
+            )}
+
+          </table>
+        </div>
+        <div className={styles.buttonDiv}>
+          <button
+            className={styles.addServerButton}
+            onClick={() => setAddServerModalShow(true)}
+          >Add New Server</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default ServersInfoContainer;

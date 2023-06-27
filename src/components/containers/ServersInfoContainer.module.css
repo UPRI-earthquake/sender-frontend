@@ -1,17 +1,74 @@
 .serversInfo {
   width: 100%;
   max-width: 900px;
+  min-width: 300px;
   margin: 15px;
 }
 
 @media (min-width: 768px) {
   .serversInfo {
-    max-width: 50%; /* Adjust the maximum width for larger screens */
+    max-width: 50%;
   }
+}
+
+.panelHeader {
+  border: 1px solid #dee2e6;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  background: #f8f9fa;
+  padding: 1.25rem;
+}
+
+.panelHeader p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.panelBody {
+  padding: 1.25rem;
+  border: 1px solid #dee2e6;
+  background: #ffffff;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-top: 0 none;
 }
 
 .buttonDiv {
   display: flex;
   justify-content: center;
   padding-top: 1rem;
+}
+
+.addServerButton {
+  background-color: #3a6a50;
+  color: #fff;
+  width: 200px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.serversTableContainer {
+  min-width: 100%;
+  overflow: auto;
+}
+
+.serversTable {
+  border-collapse: collapse;
+}
+
+.serversTable thead th {
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  font-weight: 700;
+  background: #f8f9fa;
+}
+
+.serversTable tbody tr td {
+  text-align: left;
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-width: 0 0 1px 0;
 }
