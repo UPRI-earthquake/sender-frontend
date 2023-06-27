@@ -13,7 +13,7 @@ function DeviceInfoContainer() {
   const [station, setStation] = useState('Not Set');
   const [location, setLocation] = useState('Not Set');
   const [elevation, setElevation] = useState('Not Set');
-  const [status, setStatus] = useState('Unlinked');
+  const [status, setStatus] = useState('Not Linked');
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
@@ -36,7 +36,7 @@ function DeviceInfoContainer() {
         setLinkButton(true); //disabled = true
         setUnlinkButton(false); //enabled = false
       } else {
-        setStatus("Unlinked")
+        setStatus("Not Linked")
         setLinkButton(false); //disabled = false
         setUnlinkButton(true); //disabled = true
       }
@@ -104,7 +104,7 @@ function DeviceInfoContainer() {
                 <td>Device Status</td>
                 <td>:</td>
                 <td className={styles.labelValue}>
-                  <p className={(status === 'Unlinked') ? styles.unlinkedLabel : styles.linkedLabel}>{status}</p>
+                  <p className={(status === 'Not Linked') ? styles.unlinkedLabel : styles.linkedLabel}>{status}</p>
                 </td>
               </tr>
             </tbody>
