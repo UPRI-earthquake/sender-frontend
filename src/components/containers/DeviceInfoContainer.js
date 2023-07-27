@@ -27,13 +27,15 @@ function DeviceInfoContainer() {
         : process.env.REACT_APP_BACKEND_DEV;
       const response = await axios.get(`${backend_host}/device/info`)
       console.log(response)
+      const deviceInfo = response.data.payload;
+      
       // Set device information
-      if (response.data.streamId != null) {
-        setNetwork(response.data.network)
-        setStation(response.data.station)
-        setLongitude(`${response.data.latitude}°`)
-        setLatitude(`${response.data.latitude}°`)
-        setElevation(`${response.data.elevation}m`)
+      if (deviceInfo.streamId != null) {
+        setNetwork(deviceInfo.network)
+        setStation(deviceInfo.station)
+        setLongitude(`${deviceInfo.latitude}°`)
+        setLatitude(`${deviceInfo.latitude}°`)
+        setElevation(`${deviceInfo.elevation}m`)
         setStatus("Linked")
         setLinkButton(true); //disabled = true
         setUnlinkButton(false); //enabled = false
