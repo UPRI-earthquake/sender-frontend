@@ -11,7 +11,8 @@ function DeviceInfoContainer() {
   const [unlinkButton, setUnlinkButton] = useState(true);
   const [network, setNetwork] = useState('Not Set');
   const [station, setStation] = useState('Not Set');
-  const [location, setLocation] = useState('Not Set');
+  const [longitude, setLongitude] = useState('Not Set');
+  const [latitude, setLatitude] = useState('Not Set');
   const [elevation, setElevation] = useState('Not Set');
   const [status, setStatus] = useState('Not Linked');
 
@@ -24,14 +25,15 @@ function DeviceInfoContainer() {
       const backend_host = process.env.NODE_ENV === 'production'
         ? process.env.REACT_APP_BACKEND_PROD
         : process.env.REACT_APP_BACKEND_DEV;
-      const response = await axios.get(`${backend_host}/deviceInfo`)
+      const response = await axios.get(`${backend_host}/device/info`)
       console.log(response)
       // Set device information
       if (response.data.streamId != null) {
         setNetwork(response.data.network)
         setStation(response.data.station)
-        setLocation(response.data.location)
-        setElevation(response.data.elevation)
+        setLongitude(`${response.data.latitude}°`)
+        setLatitude(`${response.data.latitude}°`)
+        setElevation(`${response.data.elevation}m`)
         setStatus("Linked")
         setLinkButton(true); //disabled = true
         setUnlinkButton(false); //enabled = false
@@ -91,9 +93,14 @@ function DeviceInfoContainer() {
                 <td className={styles.labelValue}>{station}</td>
               </tr>
               <tr>
-                <td className={styles.label}>Location</td>
+                <td className={styles.label}>Longitude</td>
                 <td>:</td>
-                <td className={styles.labelValue}>{location}</td>
+                <td className={styles.labelValue}>{longitude}</td>
+              </tr>
+              <tr>
+                <td className={styles.label}>Latitude</td>
+                <td>:</td>
+                <td className={styles.labelValue}>{latitude}</td>
               </tr>
               <tr>
                 <td className={styles.label}>Elevation</td>
