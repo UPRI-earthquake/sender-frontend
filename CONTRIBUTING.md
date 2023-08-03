@@ -39,6 +39,20 @@ For local development, the sender-backend repository is needed to serve the requ
         ```bash
         docker compose up
         ```
+        See [this cheatsheet](https://upri-earthquake.github.io/docker-cheatsheet) for useful docker recipes.
+
+## Publishing container image (For admins)
+1. Build the image, and tag with the correct [semantic versioning](https://semver.org/): 
+    > Note: replace X.Y.Z, and you should be at the same directory as the Dockerfile
+
+    ```bash
+    docker build -t ghcr.io/upri-earthquake/sender-frontend:X.Y.Z .
+    ```
+2. Push the image to ghcr.io:
+    ```bash
+    docker push ghcr.io/upri-earthquake/sender-frontend:X.Y.Z
+    ```
+    > ℹ️ Note: You need an access token to publish, install, and delete private, internal, and public packages in Github Packages. Refer to this [tutorial](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry) on how to authenticate to the container registry.
 
 ## Development Workflow: Creating New Feature
 Please refer to the [contributing guide](https://upri-earthquake.github.io/dev-guide-contributing) to the entire EarthquakeHub suite.
