@@ -1,18 +1,5 @@
-# UPRI-SEISMO-rShake-front-end
-This is the front-end repository for the rShake UPRI webapp used to (1) link device to earthquake-hub account, and (2) turn-on or turn-off data streaming from device to earthquake-hub.
+# Sender-frontend
+This is the user interface for the rshake device sender web application which is the client-side code served as static html files by the backend.
 
 ### Development Setup
-#### Prerequisites:
-* node
-* npm or yarn
-
-#### Modules/Dependencies:
-* *axios*
-* *primereact*
-* *bootstrap*
-* *redux*
-
-#### Setting Up:
-1. Clone this repository.
-2. Run `npm install` or `yarn install` to install dependencies.
-3. Run `npm start` to enable front-end at *port 3000*.
+To run this repository on your local machine, please follow the instructions provided under the [Setting Up The Repository On Your Local Machine](CONTRIBUTING.md#setting-up-the-repository-on-your-local-machine) section of the [contributing.md](CONTRIBUTING.md).
