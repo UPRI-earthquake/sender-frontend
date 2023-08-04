@@ -113,8 +113,8 @@ function DeviceLinkModal(props) {
             </div>
 
             <div className={styles.modalFooter}>
-              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
               <button className={styles.submitBtn} onClick={handleDeviceLink}>Submit</button>
+              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
             </div>
           </form>
         </div>
