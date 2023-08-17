@@ -37,7 +37,7 @@ function DeviceLinkModal(props) {
 			const backend_host = process.env.NODE_ENV === 'production'
 				? window['ENV'].REACT_APP_BACKEND_PROD
 				: window['ENV'].REACT_APP_BACKEND_DEV;
-			await axios.post(`${backend_host}/deviceLinkRequest`, {
+			await axios.post(`${backend_host}/device/link`, {
 				username: inputUsername,
 				password: inputPassword
 			});

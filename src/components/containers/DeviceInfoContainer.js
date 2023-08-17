@@ -129,6 +129,7 @@ function DeviceInfoContainer() {
               className={styles.openUnlinkModalButton}
               disabled={unlinkButton}
               onClick={() => setDeviceUnlinkModalShow(true)}
+              hidden={true}
             >Unlink</button>
           </div>
         </div>
