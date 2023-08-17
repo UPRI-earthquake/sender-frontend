@@ -4,35 +4,17 @@ version: '3.9'
 
 services:
   sender-frontend:
-    platform: linux/arm64/v8
+    platform: linux/arm/v7
     container_name: sender-frontend
-    image: "ghcr.io/upri-earthquake/sender-frontend:0.0.1-arm32v7"
-    depends_on:
-      - "sender-backend"
-    environment:
-      - NGINX_PORT=80
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: "base" # select dockerfile stage to use
+    image: "ghcr.io/upri-earthquake/sender-frontend:dev"
+    volumes:
+      # bind local dir to reflect changes in container
+      # NOTE: includes everything, including all those in .dockerignore, specifically .env
+      - ./:/app
     ports:  # expose nginx ports to host
       - "3000:3000"
-    networks:
-      app-network:
-        ipv4_address: 172.24.0.2
-
-  sender-backend:
-    platform: linux/arm64/v8
-    container_name: sender-backend
-    image: "ghcr.io/upri-earthquake/sender-backend:0.0.1-arm32v7"
-    expose:
-      - "5001"
-    extra_hosts:
-       - "host.docker.internal:host-gateway"
-    networks:
-      app-network:
-        ipv4_address: 172.24.0.3
-
-networks:
-  app-network:
-    name: sender-network
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.24.0.0/16
+    command: npm start

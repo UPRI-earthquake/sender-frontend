@@ -35,8 +35,8 @@ function DeviceLinkModal(props) {
 
 		try {
 			const backend_host = process.env.NODE_ENV === 'production'
-				? process.env.REACT_APP_BACKEND_PROD
-				: process.env.REACT_APP_BACKEND_DEV;
+				? window['ENV'].REACT_APP_BACKEND_PROD
+				: window['ENV'].REACT_APP_BACKEND_DEV;
 			await axios.post(`${backend_host}/deviceLinkRequest`, {
 				username: inputUsername,
 				password: inputPassword
@@ -113,8 +113,8 @@ function DeviceLinkModal(props) {
             </div>
 
             <div className={styles.modalFooter}>
-              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
               <button className={styles.submitBtn} onClick={handleDeviceLink}>Submit</button>
+              <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
             </div>
           </form>
         </div>
