@@ -10,6 +10,7 @@ WORKDIR /app
 FROM base as build
 
 ENV PATH /app/node-modules/.bin:$PATH
+ENV NODE_ENV=production
 COPY package.json ./
 COPY package-lock.json ./
 RUN npm ci
