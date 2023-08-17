@@ -36,8 +36,8 @@ echo "}" >> "$1"
 
 echo "Configuration file ($1) has been generated with REACT_APP_ env vars."
 
-# check environment and get all vars that start with REACT_APP_
-# for each of the vars, write them on env.js available in this path ./public/env.js
+# check environment and .env file, and get all vars that start with REACT_APP_
+# for each of the vars, write them on config.js available in this path ./public/config.js
 # the format would be:
 #
 #window['ENV'] = {
