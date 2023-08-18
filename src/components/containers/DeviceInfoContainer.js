@@ -33,7 +33,7 @@ function DeviceInfoContainer() {
       if (deviceInfo.streamId != null) {
         setNetwork(deviceInfo.network)
         setStation(deviceInfo.station)
-        setLongitude(`${deviceInfo.latitude}°`)
+        setLongitude(`${deviceInfo.longitude}°`)
         setLatitude(`${deviceInfo.latitude}°`)
         setElevation(`${deviceInfo.elevation}m`)
         setStatus("Linked")
