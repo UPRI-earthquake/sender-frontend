@@ -20,6 +20,7 @@ function AddServerModal(props) {
         : window['ENV'].REACT_APP_W1_BACKEND_DEV
       const response = await axios.get(`${w1_backend_host}/accounts/ringserver-hosts`);
       setHostsOptions(response.data.payload)
+      setSelectedHost(response.data.payload[0].ringserverUrl)
     } catch (error) {
       // Handle any error that occurred during the request
       console.error('Error:', error.message);
@@ -102,7 +103,7 @@ function AddServerModal(props) {
           <form>
             <div className={styles.modalBody}>
               <label className={styles.inputLabel}>Ringserver URL</label>
-              <select name="host" value={selectedHost} onChange={handleHostChange}>
+              <select value={selectedHost} onChange={handleHostChange}>
                 {hostsOptions.map((host, index) => (
                   <option key={index} value={host.ringserverUrl}>
                     {host.ringserverUrl}
