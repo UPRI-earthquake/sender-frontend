@@ -6,7 +6,8 @@ import styles from './Modal.module.css'
 function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
   const [hostsOptions, setHostsOptions] = useState([]);
-  const [selectedHost, setSelectedHost] = useState();
+  const [selectedInstitution, setSelectedInstitution] = useState();
+  const [selectedHostUrl, setSelectedHostUrl] = useState();
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -20,7 +21,8 @@ function AddServerModal(props) {
         : window['ENV'].REACT_APP_W1_BACKEND_DEV
       const response = await axios.get(`${w1_backend_host}/accounts/ringserver-hosts`);
       setHostsOptions(response.data.payload)
-      setSelectedHost(response.data.payload[0].ringserverUrl)
+      setSelectedHostUrl(response.data.payload[0].ringserverUrl)
+      setSelectedInstitution(response.data.payload[0].username)
     } catch (error) {
       // Handle any error that occurred during the request
       console.error('Error:', error.message);
@@ -48,7 +50,9 @@ function AddServerModal(props) {
   const [toastType, setToastType] = useState('error')
 
   const handleHostChange = async (event) => {
-    setSelectedHost(event.target.value)
+    setSelectedHostUrl(event.target.value);
+    const institution = hostsOptions.find((host) => host.ringserverUrl === event.target.value);
+    setSelectedInstitution(institution.username);
   }
 
   //HANDLE ADD SERVER FORM SUBMIT
@@ -61,7 +65,8 @@ function AddServerModal(props) {
 				? window['ENV'].REACT_APP_BACKEND_PROD
 				: window['ENV'].REACT_APP_BACKEND_DEV;
       const response = await axios.post(`${backend_host}/servers/add`, {
-        url: selectedHost,
+        url: selectedHostUrl,
+        institutionName: selectedInstitution
       });
 
       console.log(response);
@@ -103,10 +108,10 @@ function AddServerModal(props) {
           <form>
             <div className={styles.modalBody}>
               <label className={styles.inputLabel}>Ringserver URL</label>
-              <select value={selectedHost} onChange={handleHostChange}>
+              <select value={selectedHostUrl} onChange={handleHostChange}>
                 {hostsOptions.map((host, index) => (
                   <option key={index} value={host.ringserverUrl}>
-                    {host.ringserverUrl}
+                    {host.username}
                   </option>
                 ))}
               </select>

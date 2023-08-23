@@ -23,6 +23,7 @@ function ServersInfoContainer() {
       const serversData = response.data.payload;
       const serversList = Object.keys(serversData).map((url) => {
         return {
+          institutionName: serversData[url].institutionName,
           url: url,
           status: serversData[url].status
         };
@@ -63,6 +64,7 @@ function ServersInfoContainer() {
           <table className={styles.serversTable}>
             <thead>
               <tr>
+                <th>Institution</th>
                 <th>Server URL</th>
                 <th>Stream Status</th>
               </tr>
@@ -72,6 +74,7 @@ function ServersInfoContainer() {
               <tbody>
                 {servers.map((server) => (
                   <tr key={server.url}>
+                    <td>{server.institutionName}</td>
                     <td>{server.url}</td>
                     <td>{server.status}</td>
                   </tr>
