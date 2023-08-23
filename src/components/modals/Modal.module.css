@@ -49,6 +49,16 @@
   border: 1px solid #ccc;
 }
 
+.modal select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 2rem;
+}
+
 .inputField {
   position: relative;
   margin-top: 2rem;
