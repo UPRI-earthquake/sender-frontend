@@ -7,17 +7,14 @@ import DeviceInfoContainer from './components/containers/DeviceInfoContainer';
 import ServersInfoContainer from './components/containers/ServersInfoContainer';
 
 function App() {
-  const [containerReload, setContainerReload] = useState(false)
-  const handleContainerReload = () => {
-    setContainerReload(true);
-  }
+  const [refreshFlag, setRefreshFlag] = useState(false) // if true, refresh contents of the container
 
   return (
     <>
       <Header />
       <Body>
-        <DeviceInfoContainer sendReloadFlag={handleContainerReload}/>
-        <ServersInfoContainer reloadContainer={containerReload}/>
+        <DeviceInfoContainer setRefreshFlag={setRefreshFlag}/>
+        <ServersInfoContainer refreshFlag={refreshFlag}/>
       </Body>
     </>
   );

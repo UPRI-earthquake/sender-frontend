@@ -72,7 +72,7 @@ function DeviceInfoContainer(props) {
   }
 
   const handleOnUnlinkingSuccess = () => {
-    props.sendReloadFlag(); // Send reload flag to Body.js
+    props.setRefreshFlag(true); // Other container uses this flag to refresh their content
     getDeviceInfo();
 
     // Set Toast Message

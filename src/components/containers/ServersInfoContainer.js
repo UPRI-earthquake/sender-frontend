@@ -5,7 +5,7 @@ import Toast from '../Toast';
 
 import axios from 'axios';
 
-function ServersInfoContainer(reloadContainer) {
+function ServersInfoContainer(refreshFlag) {
   //MODAL STATES
   const [showAddServerModal, setAddServerModalShow] = useState(false);
   const [servers, setServers] = useState([]);
@@ -36,12 +36,7 @@ function ServersInfoContainer(reloadContainer) {
 
   useEffect(() => {
     fetchServers();
-  }, []);
-
-  if (reloadContainer) {
-    fetchServers();
-  }
-
+  }, [refreshFlag]);
 
   const handleAddServer = async () => {
     await fetchServers();
