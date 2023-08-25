@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import styles from './Modal.module.css'
 import Toast from "../Toast.js";
-import {ReactComponent as Logo} from '../upri-logo-loading.svg';
-import "../upri-logo-animation.css";
+import LoadingScreen from "../LoadingScreen";
 
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
@@ -49,7 +48,7 @@ function DeviceLinkModal(props) {
 			setInputUsername('');
 			setInputPassword('');
 			
-      setLoadingScreen(false); //show loading screen
+      setLoadingScreen(false); // remove loading screen
 
 			// Call onLinkingSuccess prop
 			props.onLinkingSuccess();
@@ -97,9 +96,7 @@ function DeviceLinkModal(props) {
           
           {/* Loading Screen */}
           {(loadingScreen) 
-            ? ( <div className={styles.loadingScreen}>
-                  <Logo className={styles.logo}/>
-                </div>)
+            ? ( <LoadingScreen/> )
             : ( <div></div> )}
           {/* End of Loading Screen */}
 

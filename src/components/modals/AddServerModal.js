@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import Toast from "../Toast.js";
 import axios from 'axios';
 import styles from './Modal.module.css'
+import LoadingScreen from "../LoadingScreen.js";
 
 function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
   const [hostsOptions, setHostsOptions] = useState([]);
   const [selectedInstitution, setSelectedInstitution] = useState();
   const [selectedHostUrl, setSelectedHostUrl] = useState();
+  const [loadingScreen, setLoadingScreen] = useState(false);
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -58,6 +60,7 @@ function AddServerModal(props) {
   //HANDLE ADD SERVER FORM SUBMIT
   const handleAddServerSubmit = async (event) => {
     event.preventDefault();
+    setLoadingScreen(true);
 
     try {
       // Make a POST request to the server using Axios
@@ -74,6 +77,8 @@ function AddServerModal(props) {
       // Call onAddServerSuccess prop
       props.onAddServerSuccess();
       props.onModalClose();
+      
+      setLoadingScreen(false); // remove loading screen 
     } catch (error) {
       console.log(error);
 			let errorSummary = "";
@@ -84,9 +89,13 @@ function AddServerModal(props) {
 				errorSummary += error.response.data.message;
 			} 
 
-      // Set Toast Content
-      setToastType('error');
-      setToastMessage(`Add New Server Error: ${errorSummary}`);
+      // remove loading screen after timeout
+      setTimeout(() => {
+        setLoadingScreen(false);
+        // Set Toast Content
+        setToastType('error');
+        setToastMessage(`Add New Server Error: ${errorSummary}`);
+      }, 1000);
     }
   };
 
@@ -102,6 +111,13 @@ function AddServerModal(props) {
 
       <div className={styles.modalOverlay}> 
         <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
+
+          {/* Loading Screen */}
+          {(loadingScreen) 
+            ? ( <LoadingScreen/> )
+            : ( <div></div> )}
+          {/* End of Loading Screen */}
+
           <div className={styles.modalHeader}>
             Add Ringserver
           </div>

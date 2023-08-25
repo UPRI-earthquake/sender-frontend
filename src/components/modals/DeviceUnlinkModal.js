@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import styles from './Modal.module.css'
 import Toast from "../Toast.js";
+import LoadingScreen from "../LoadingScreen";
 
 function DeviceUnlinkModal(props) {
 
+  const [loadingScreen, setLoadingScreen] = useState(false);
   const modalRef = useRef(null);
 
   // ENTRANCE ANIMATION
@@ -30,6 +32,7 @@ function DeviceUnlinkModal(props) {
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceUnlink = async(event) => {
 		event.preventDefault();
+    setLoadingScreen(true); // show loading screen
 
     try {
 			const backend_host = process.env.NODE_ENV === 'production'
@@ -41,6 +44,7 @@ function DeviceUnlinkModal(props) {
 			props.onUnlinkingSuccess();
       props.onModalClose();
 
+      setLoadingScreen(false); // remove loading screen
 		} catch (error) {
 			console.log(error);
 			let errorSummary = "";
@@ -50,10 +54,14 @@ function DeviceUnlinkModal(props) {
 			} else if (error.response.data.message) {
 				errorSummary += error.response.data.message;
 			}
-
-      // Set Toast Content
-      setToastType('error');
-      setToastMessage(`Device Linking Error: ${errorSummary}`);
+      
+      // remove loading screen after timeout
+      setTimeout(() => {
+        setLoadingScreen(false);
+        // Set Toast Content
+        setToastType('error');
+        setToastMessage(`Device Linking Error: ${errorSummary}`);
+      }, 1000);
 		}
 	}
 
@@ -69,6 +77,13 @@ function DeviceUnlinkModal(props) {
 
       <div className={styles.modalOverlay}>
         <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
+
+          {/* Loading Screen */}
+          {(loadingScreen) 
+            ? ( <LoadingScreen/> )
+            : ( <div></div> )}
+          {/* End of Loading Screen */}
+
           <div className={styles.modalHeader}>
             Unlink Device-to-Account
           </div>
