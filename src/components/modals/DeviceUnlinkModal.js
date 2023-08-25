@@ -89,7 +89,7 @@ function DeviceUnlinkModal(props) {
           </div>
 
           <div>
-            <p>Are you sure you want to unlink this device to account?</p>
+            <p>Are you sure you want to unlink this device to your account?</p>
           </div>
 
           <div className={styles.modalFooter}>
