@@ -5,7 +5,7 @@ import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 import styles from "./DeviceInfoContainer.module.css";
 import Toast from '../Toast';
 
-function DeviceInfoContainer() {
+function DeviceInfoContainer(props) {
   //DEVICE INFO
   const [linkButton, setLinkButton] = useState();
   const [unlinkButton, setUnlinkButton] = useState(true);
@@ -40,6 +40,11 @@ function DeviceInfoContainer() {
         setLinkButton(true); //disabled = true
         setUnlinkButton(false); //enabled = false
       } else {
+        setNetwork('Not Set')
+        setStation('Not Set')
+        setLongitude('Not Set')
+        setLatitude('Not Set')
+        setElevation('Not Set')
         setStatus("Not Linked")
         setLinkButton(false); //disabled = false
         setUnlinkButton(true); //disabled = true
@@ -66,6 +71,19 @@ function DeviceInfoContainer() {
     }, 5000);
   }
 
+  const handleOnUnlinkingSuccess = () => {
+    props.sendReloadFlag(); // Send reload flag to Body.js
+    getDeviceInfo();
+
+    // Set Toast Message
+    setToastMessage('Device Successfully Unlinked');
+    setToastType('success');
+
+    setTimeout(() => {
+      setToastMessage('');
+    }, 5000);
+  }
+
   //MODAL STATES
   const [showDeviceLinkModal, setDeviceLinkModalShow] = useState(false);
   const [showDeviceUnlinkModal, setDeviceUnlinkModalShow] = useState(false);
@@ -75,7 +93,7 @@ function DeviceInfoContainer() {
       <Toast message={toastMessage} toastType={toastType}></Toast>
 
       {showDeviceLinkModal && <DeviceLinkModal onModalClose={() => setDeviceLinkModalShow(false)} onLinkingSuccess={handleOnLinkingSuccess} />}
-      {showDeviceUnlinkModal && <DeviceUnlinkModal onModalClose={() => setDeviceUnlinkModalShow(false)} />}
+      {showDeviceUnlinkModal && <DeviceUnlinkModal onModalClose={() => setDeviceUnlinkModalShow(false)} onUnlinkingSuccess={handleOnUnlinkingSuccess} />}
 
       <>
         <div className={styles.panelHeader}>
@@ -129,7 +147,7 @@ function DeviceInfoContainer() {
               className={styles.openUnlinkModalButton}
               disabled={unlinkButton}
               onClick={() => setDeviceUnlinkModalShow(true)}
-              hidden={true}
+              hidden={false}
             >Unlink</button>
           </div>
         </div>

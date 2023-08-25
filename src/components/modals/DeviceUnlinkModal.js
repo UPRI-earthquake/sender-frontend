@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import styles from './Modal.module.css'
+import Toast from "../Toast.js";
 
 function DeviceUnlinkModal(props) {
 
@@ -21,10 +23,38 @@ function DeviceUnlinkModal(props) {
     );
   }, []);
 
+  // TOASTS
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('error')
+
 	//HANDLE LINK FORM SUBMIT
-	const handleDeviceUnlink = (event) => {
+	const handleDeviceUnlink = async(event) => {
 		event.preventDefault();
-		// TODO: unlink device codeflow
+
+    try {
+			const backend_host = process.env.NODE_ENV === 'production'
+				? window['ENV'].REACT_APP_BACKEND_PROD
+				: window['ENV'].REACT_APP_BACKEND_DEV;
+			await axios.post(`${backend_host}/device/unlink`);
+
+      // Call onUnlinkingSuccess prop
+			props.onUnlinkingSuccess();
+      props.onModalClose();
+
+		} catch (error) {
+			console.log(error);
+			let errorSummary = "";
+
+			if (error.code === "ERR_NETWORK") {
+				errorSummary += error.message;
+			} else if (error.response.data.message) {
+				errorSummary += error.response.data.message;
+			}
+
+      // Set Toast Content
+      setToastType('error');
+      setToastMessage(`Device Linking Error: ${errorSummary}`);
+		}
 	}
 
   const handleModalClose = (event) => {
@@ -35,6 +65,8 @@ function DeviceUnlinkModal(props) {
 
 	return (
 		<>
+      <Toast message={toastMessage} toastType={toastType}></Toast>
+
       <div className={styles.modalOverlay}>
         <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
           <div className={styles.modalHeader}>
@@ -42,11 +74,11 @@ function DeviceUnlinkModal(props) {
           </div>
 
           <div>
-            <p>Are you sure to unlink this device to account?</p>
+            <p>Are you sure you want to unlink this device to account?</p>
           </div>
 
           <div className={styles.modalFooter}>
-            <button className={styles.submitBtn} onClick={handleDeviceUnlink}>Submit</button>
+            <button className={styles.submitBtn} onClick={handleDeviceUnlink}>Confirm</button>
             <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
           </div>
         </div>
