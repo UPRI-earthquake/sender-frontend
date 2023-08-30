@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import styles from './Modal.module.css'
 import Toast from "../Toast.js";
+import LoadingScreen from "../LoadingScreen";
 
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
+  const [loadingScreen, setLoadingScreen] = useState(false);
   const modalRef = useRef(null);
 
   // ENTRANCE ANIMATION
@@ -32,6 +34,7 @@ function DeviceLinkModal(props) {
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceLink = async (event) => {
 		event.preventDefault();
+    setLoadingScreen(true);
 
 		try {
 			const backend_host = process.env.NODE_ENV === 'production'
@@ -45,6 +48,7 @@ function DeviceLinkModal(props) {
 			setInputUsername('');
 			setInputPassword('');
 			
+      setLoadingScreen(false); // remove loading screen
 
 			// Call onLinkingSuccess prop
 			props.onLinkingSuccess();
@@ -64,9 +68,13 @@ function DeviceLinkModal(props) {
 				errorSummary += error.response.data.message;
 			}
 
-      // Set Toast Content
-      setToastType('error');
-      setToastMessage(`Device Linking Error: ${errorSummary}`);
+      // remove loading screen after timeout
+      setTimeout(() => {
+        setLoadingScreen(false);
+        // Set Toast Content
+        setToastType('error');
+        setToastMessage(`Device Linking Error: ${errorSummary}`);
+      }, 1000);
 		}
 	}
 
@@ -85,6 +93,13 @@ function DeviceLinkModal(props) {
 
       <div className={styles.modalOverlay}>
         <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
+          
+          {/* Loading Screen */}
+          {(loadingScreen) 
+            ? ( <LoadingScreen/> )
+            : ( <div></div> )}
+          {/* End of Loading Screen */}
+
           <form>
             <div className={styles.modalHeader}>
               Device-to-Account Link

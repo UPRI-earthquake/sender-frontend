@@ -2,12 +2,34 @@ import React, { useState, useEffect, useRef } from "react";
 import Toast from "../Toast.js";
 import axios from 'axios';
 import styles from './Modal.module.css'
+import LoadingScreen from "../LoadingScreen.js";
 
 function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
-  const [inputUrl, setInputUrl] = useState('');
-  const [inputHostName, setInputHostName] = useState('');
+  const [hostsOptions, setHostsOptions] = useState([]);
+  const [selectedInstitution, setSelectedInstitution] = useState();
+  const [selectedHostUrl, setSelectedHostUrl] = useState();
+  const [loadingScreen, setLoadingScreen] = useState(false);
   const modalRef = useRef(null);
+
+  useEffect(() => {
+    fetchRingserverHosts();
+  }, [])
+
+  const fetchRingserverHosts = async () => {
+    try {
+      const w1_backend_host = process.env.NODE_ENV === 'production'
+        ? window['ENV'].REACT_APP_W1_BACKEND
+        : window['ENV'].REACT_APP_W1_BACKEND_DEV
+      const response = await axios.get(`${w1_backend_host}/accounts/ringserver-hosts`);
+      setHostsOptions(response.data.payload)
+      setSelectedHostUrl(response.data.payload[0].ringserverUrl)
+      setSelectedInstitution(response.data.payload[0].username)
+    } catch (error) {
+      // Handle any error that occurred during the request
+      console.error('Error:', error.message);
+    }
+  }
 
   // ENTRANCE ANIMATION
   useEffect(() => {
@@ -29,9 +51,16 @@ function AddServerModal(props) {
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('error')
 
+  const handleHostChange = async (event) => {
+    setSelectedHostUrl(event.target.value);
+    const institution = hostsOptions.find((host) => host.ringserverUrl === event.target.value);
+    setSelectedInstitution(institution.username);
+  }
+
   //HANDLE ADD SERVER FORM SUBMIT
   const handleAddServerSubmit = async (event) => {
     event.preventDefault();
+    setLoadingScreen(true);
 
     try {
       // Make a POST request to the server using Axios
@@ -39,17 +68,17 @@ function AddServerModal(props) {
 				? window['ENV'].REACT_APP_BACKEND_PROD
 				: window['ENV'].REACT_APP_BACKEND_DEV;
       const response = await axios.post(`${backend_host}/servers/add`, {
-        hostName: inputHostName,
-        url: inputUrl,
+        url: selectedHostUrl,
+        institutionName: selectedInstitution
       });
 
       console.log(response);
-      setInputUrl('');
-      setInputHostName('');
 
       // Call onAddServerSuccess prop
       props.onAddServerSuccess();
       props.onModalClose();
+      
+      setLoadingScreen(false); // remove loading screen 
     } catch (error) {
       console.log(error);
 			let errorSummary = "";
@@ -60,9 +89,13 @@ function AddServerModal(props) {
 				errorSummary += error.response.data.message;
 			} 
 
-      // Set Toast Content
-      setToastType('error');
-      setToastMessage(`Add New Server Error: ${errorSummary}`);
+      // remove loading screen after timeout
+      setTimeout(() => {
+        setLoadingScreen(false);
+        // Set Toast Content
+        setToastType('error');
+        setToastMessage(`Add New Server Error: ${errorSummary}`);
+      }, 1000);
     }
   };
 
@@ -78,33 +111,30 @@ function AddServerModal(props) {
 
       <div className={styles.modalOverlay}> 
         <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
+
+          {/* Loading Screen */}
+          {(loadingScreen) 
+            ? ( <LoadingScreen/> )
+            : ( <div></div> )}
+          {/* End of Loading Screen */}
+
           <div className={styles.modalHeader}>
             Add Ringserver
           </div>
           <form>
             <div className={styles.modalBody}>
-              <div className={styles.inputField}>
-                <input
-                  className={styles.modalInput}
-                  value={inputUrl}
-                  onChange={(e) => setInputUrl(e.target.value)}
-                  autoFocus
-                />
-                <label className={styles.inputLabel}>Ringserver URL</label>
-              </div>
-
-              <div className={styles.inputField}>
-                <input
-                  className={styles.modalInput}
-                  value={inputHostName}
-                  onChange={(e) => setInputHostName(e.target.value)}
-                />
-                <label className={styles.inputLabel}>Host Name</label>
-              </div>
+              <label className={styles.inputLabel}>Ringserver URL</label>
+              <select value={selectedHostUrl} onChange={handleHostChange}>
+                {hostsOptions.map((host, index) => (
+                  <option key={index} value={host.ringserverUrl}>
+                    {host.username}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.modalFooter}>
-              <button className={styles.submitBtn} onClick={handleAddServerSubmit}>Submit</button>
+              <button className={styles.submitBtn} onClick={handleAddServerSubmit}>Add</button>
               <button className={styles.cancelBtn} onClick={handleModalClose} >Cancel</button>
             </div>
           </form>

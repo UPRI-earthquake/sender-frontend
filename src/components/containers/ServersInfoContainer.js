@@ -5,7 +5,7 @@ import Toast from '../Toast';
 
 import axios from 'axios';
 
-function ServersInfoContainer() {
+function ServersInfoContainer(refreshFlag) {
   //MODAL STATES
   const [showAddServerModal, setAddServerModalShow] = useState(false);
   const [servers, setServers] = useState([]);
@@ -23,7 +23,7 @@ function ServersInfoContainer() {
       const serversData = response.data.payload;
       const serversList = Object.keys(serversData).map((url) => {
         return {
-          hostName: serversData[url].hostName,
+          institutionName: serversData[url].institutionName,
           url: url,
           status: serversData[url].status
         };
@@ -36,8 +36,7 @@ function ServersInfoContainer() {
 
   useEffect(() => {
     fetchServers();
-  }, []);
-
+  }, [refreshFlag]);
 
   const handleAddServer = async () => {
     await fetchServers();
@@ -64,7 +63,7 @@ function ServersInfoContainer() {
           <table className={styles.serversTable}>
             <thead>
               <tr>
-                <th>Host Name</th>
+                <th>Institution</th>
                 <th>Server URL</th>
                 <th>Stream Status</th>
               </tr>
@@ -74,7 +73,7 @@ function ServersInfoContainer() {
               <tbody>
                 {servers.map((server) => (
                   <tr key={server.url}>
-                    <td>{server.hostName}</td>
+                    <td>{server.institutionName}</td>
                     <td>{server.url}</td>
                     <td>{server.status}</td>
                   </tr>
