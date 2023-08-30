@@ -19,7 +19,7 @@ function AddServerModal(props) {
   const fetchRingserverHosts = async () => {
     try {
       const w1_backend_host = process.env.NODE_ENV === 'production'
-        ? window['ENV'].REACT_APP_W1_BACKEND
+        ? window['ENV'].REACT_APP_W1_BACKEND_PROD
         : window['ENV'].REACT_APP_W1_BACKEND_DEV
       const response = await axios.get(`${w1_backend_host}/accounts/ringserver-hosts`);
       setHostsOptions(response.data.payload)
