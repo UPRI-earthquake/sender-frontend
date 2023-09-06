@@ -18,10 +18,10 @@ function AddServerModal(props) {
 
   const fetchRingserverHosts = async () => {
     try {
-      const w1_backend_host = process.env.NODE_ENV === 'production'
-        ? window['ENV'].REACT_APP_W1_BACKEND_PROD
-        : window['ENV'].REACT_APP_W1_BACKEND_DEV
-      const response = await axios.get(`${w1_backend_host}/accounts/ringserver-hosts`);
+      const backend_host = process.env.NODE_ENV === 'production'
+        ? window['ENV'].REACT_APP_BACKEND_PROD
+        : window['ENV'].REACT_APP_BACKEND_DEV
+      const response = await axios.get(`${backend_host}/servers/ringserver-hosts`);
       setHostsOptions(response.data.payload)
       setSelectedHostUrl(response.data.payload[0].ringserverUrl + ':' + response.data.payload[0].ringserverPort)
       setSelectedInstitution(response.data.payload[0].username)
