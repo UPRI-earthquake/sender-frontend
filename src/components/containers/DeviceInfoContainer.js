@@ -23,8 +23,8 @@ function DeviceInfoContainer(props) {
   const getDeviceInfo = async () => {
     try {
       const backend_host = process.env.NODE_ENV === 'production'
-        ? window['ENV'].REACT_APP_BACKEND_PROD
-        : window['ENV'].REACT_APP_BACKEND_DEV;
+        ? `${window.location.origin}/api`
+        : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
       const response = await axios.get(`${backend_host}/device/info`)
       console.log(response)
       const deviceInfo = response.data.payload;

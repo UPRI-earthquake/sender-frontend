@@ -17,8 +17,8 @@ function ServersInfoContainer(refreshFlag) {
   const fetchServers = async () => {
     try {
       const backend_host = process.env.NODE_ENV === 'production'
-        ? window['ENV'].REACT_APP_BACKEND_PROD
-        : window['ENV'].REACT_APP_BACKEND_DEV;
+        ? `${window.location.origin}/api`
+        : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
       const response = await axios.get(`${backend_host}/stream/status`);
       const serversData = response.data.payload;
       const serversList = Object.keys(serversData).map((url) => {

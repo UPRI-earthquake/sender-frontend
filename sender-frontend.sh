@@ -108,8 +108,7 @@ function create_container() {
             --name "$CONTAINER" \
             --volume /sys/fs/cgroup:/sys/fs/cgroup:ro \
             --net UPRI-docker-network \
-            --env NGINX_PORT=3000 \
-            --env REACT_APP_BACKEND_PROD=http://rs.local:3000/api \
+            --env REACT_APP_BACKEND_PORT=5001 \
             --env NGINX_PORT=3000 \
             --publish 0.0.0.0:3000:3000 \
             "$IMAGE"

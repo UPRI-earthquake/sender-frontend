@@ -19,8 +19,8 @@ function AddServerModal(props) {
   const fetchRingserverHosts = async () => {
     try {
       const backend_host = process.env.NODE_ENV === 'production'
-        ? window['ENV'].REACT_APP_BACKEND_PROD
-        : window['ENV'].REACT_APP_BACKEND_DEV
+        ? `${window.location.origin}/api`
+        : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
       const response = await axios.get(`${backend_host}/servers/ringserver-hosts`);
       setHostsOptions(response.data.payload)
       setSelectedHostUrl(response.data.payload[0].ringserverUrl + ':' + response.data.payload[0].ringserverPort)
@@ -66,8 +66,8 @@ function AddServerModal(props) {
     try {
       // Make a POST request to the server using Axios
       const backend_host = process.env.NODE_ENV === 'production'
-				? window['ENV'].REACT_APP_BACKEND_PROD
-				: window['ENV'].REACT_APP_BACKEND_DEV;
+        ? `${window.location.origin}/api`
+        : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
       const response = await axios.post(`${backend_host}/servers/add`, {
         url: selectedHostUrl,
         institutionName: selectedInstitution
