@@ -8,6 +8,9 @@ function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
+  const [inputLongitude, setInputLongitude] = useState('');
+  const [inputLatitude, setInputLatitude] = useState('');
+  const [inputElevation, setInputElevation] = useState('');
   const [loadingScreen, setLoadingScreen] = useState(false);
   const modalRef = useRef(null);
 
@@ -42,11 +45,17 @@ function DeviceLinkModal(props) {
         : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
 			await axios.post(`${backend_host}/device/link`, {
 				username: inputUsername,
-				password: inputPassword
+				password: inputPassword,
+        longitude: inputLongitude,
+        latitude: inputLatitude,
+        elevation: inputElevation
 			});
 
 			setInputUsername('');
 			setInputPassword('');
+      setInputLongitude('');
+      setInputLatitude('');
+      setInputElevation('');
 			
       setLoadingScreen(false); // remove loading screen
 
@@ -124,6 +133,33 @@ function DeviceLinkModal(props) {
                   onChange={(e) => setInputPassword(e.target.value)}
                 />
                 <label className={styles.inputLabel}>Password</label>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  value={inputLongitude}
+                  onChange={(e) => setInputLongitude(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Longitude: <small>(in degree coordinates. e.g. `10.1234`)</small></label>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  value={inputLatitude}
+                  onChange={(e) => setInputLatitude(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Latitude: <small>(in degree coordinates. e.g. `10.1234`)</small></label>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  value={inputElevation}
+                  onChange={(e) => setInputElevation(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Elevation: <small>(in meters; relative to sea level e.g. `1.232314`)</small></label>
               </div>
             </div>
 
