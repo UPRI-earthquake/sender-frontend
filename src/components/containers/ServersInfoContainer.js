@@ -5,7 +5,7 @@ import Toast from '../Toast';
 
 import axios from 'axios';
 
-function ServersInfoContainer(refreshFlag) {
+function ServersInfoContainer({ refreshFlag }) {
   //MODAL STATES
   const [showAddServerModal, setAddServerModalShow] = useState(false);
   const [servers, setServers] = useState([]);

@@ -71,11 +71,9 @@ table td {
 .buttonDiv {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   padding-top: 1rem;
-}
-
-.buttonDiv button:not(:last-child) {
-  margin-right: 1em;
 }
 
 .openLinkModalButton {
@@ -98,6 +96,39 @@ table td {
   cursor: pointer;
 }
 
+.secondaryButton {
+  background-color: #4b5563;
+  color: #fff;
+  padding: 10px;
+  width: 140px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 button:disabled {
   cursor: not-allowed;
+}
+
+.healthSection {
+  border-top: 1px solid #dee2e6;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+}
+
+.healthHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.healthHeader p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.healthSummary {
+  font-size: 0.9rem;
+  color: #374151;
 }

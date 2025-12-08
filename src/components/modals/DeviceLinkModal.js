@@ -30,6 +30,18 @@ function DeviceLinkModal(props) {
     );
   }, []);
 
+  useEffect(() => {
+    if (props.prefillLocation) {
+      const defaultLon = props.prefillLocation.longitude;
+      const defaultLat = props.prefillLocation.latitude;
+      const defaultElev = props.prefillLocation.elevation;
+
+      setInputLongitude(defaultLon === null || defaultLon === undefined ? '' : String(defaultLon));
+      setInputLatitude(defaultLat === null || defaultLat === undefined ? '' : String(defaultLat));
+      setInputElevation(defaultElev === null || defaultElev === undefined ? '' : String(defaultElev));
+    }
+  }, [props.prefillLocation]);
+
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('error')
@@ -46,9 +58,10 @@ function DeviceLinkModal(props) {
 			await axios.post(`${backend_host}/device/link`, {
 				username: inputUsername,
 				password: inputPassword,
-        longitude: inputLongitude,
-        latitude: inputLatitude,
-        elevation: inputElevation
+        longitude: String(inputLongitude),
+        latitude: String(inputLatitude),
+        elevation: String(inputElevation),
+        forceRelink: true,
 			});
 
 			setInputUsername('');
@@ -92,6 +105,9 @@ function DeviceLinkModal(props) {
 
     setInputUsername('');
 		setInputPassword('');
+    setInputLongitude(props.prefillLocation?.longitude === null || props.prefillLocation?.longitude === undefined ? '' : String(props.prefillLocation?.longitude));
+    setInputLatitude(props.prefillLocation?.latitude === null || props.prefillLocation?.latitude === undefined ? '' : String(props.prefillLocation?.latitude));
+    setInputElevation(props.prefillLocation?.elevation === null || props.prefillLocation?.elevation === undefined ? '' : String(props.prefillLocation?.elevation));
 
     props.onModalClose();
   }
