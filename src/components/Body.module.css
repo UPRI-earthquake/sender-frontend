@@ -1,6 +1,16 @@
 .body {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  color: #444;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 48px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .body {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
 }

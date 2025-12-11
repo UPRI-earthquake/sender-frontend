@@ -8,7 +8,7 @@ function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
-  const [inputLongitude, setInputLongitude] = useState('');
+	const [inputLongitude, setInputLongitude] = useState('');
   const [inputLatitude, setInputLatitude] = useState('');
   const [inputElevation, setInputElevation] = useState('');
   const [loadingScreen, setLoadingScreen] = useState(false);
@@ -61,7 +61,6 @@ function DeviceLinkModal(props) {
         longitude: String(inputLongitude),
         latitude: String(inputLatitude),
         elevation: String(inputElevation),
-        forceRelink: true,
 			});
 
 			setInputUsername('');

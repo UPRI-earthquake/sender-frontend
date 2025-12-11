@@ -124,14 +124,16 @@ function AddServerModal(props) {
           </div>
           <form>
             <div className={styles.modalBody}>
-              <label className={styles.inputLabel}>Ringserver URL</label>
-              <select value={selectedHostUrl} onChange={handleHostChange}>
-                {hostsOptions.map((host, index) => (
-                  <option key={index} value={host.ringserverUrl + ':' + host.ringserverPort}>
-                    {host.username}
-                  </option>
-                ))}
-              </select>
+              <div className={styles.inputFieldStatic}>
+                <label className={styles.fieldLabel}>Ringserver URL</label>
+                <select value={selectedHostUrl} onChange={handleHostChange}>
+                  {hostsOptions.map((host, index) => (
+                    <option key={index} value={host.ringserverUrl + ':' + host.ringserverPort}>
+                      {host.username}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className={styles.modalFooter}>

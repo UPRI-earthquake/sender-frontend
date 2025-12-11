@@ -1,20 +1,24 @@
 /* Toast */
 .toastContainer { 
   position: fixed;
-  top: 50px;
+  top: 70px;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  z-index: 2;
+  z-index: 20;
 }
 
 .toast {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 35px;
-  background-color: #333;
+  min-width: 280px;
+  max-width: 520px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background-color: #0f172a;
   color: #fff;
+  box-shadow: var(--shadow);
 }
 
 .toast p {
@@ -23,9 +27,9 @@
 }
 
 .toast.error {
-  background-color: #d9534f;
+  background-color: #ef4444;
 }
 
 .toast.success {
-  background-color: #5cb85c;
+  background-color: #10b981;
 }
