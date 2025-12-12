@@ -5,6 +5,9 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   padding: 18px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .panelHeader {
@@ -45,9 +48,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
   border: 1px solid var(--border);
@@ -84,12 +87,33 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  flex: 1;
+}
+
+.infoSections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.infoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
+}
+
+.twoColumn {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.locationGrid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 
 .infoItem {
@@ -113,29 +137,12 @@
   font-weight: 700;
 }
 
-.healthCard {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: #f8fafc;
-}
-
 .sectionLabel {
   margin: 0;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-size: 12px;
   color: var(--muted);
-}
-
-.healthSummary {
-  margin: 4px 0 0;
-  color: var(--text-primary);
-  font-weight: 700;
 }
 
 .actionsRow {
@@ -147,7 +154,8 @@
 .primaryButton,
 .neutralButton,
 .secondaryButton,
-.ghostButton {
+.ghostButton,
+.dangerButton {
   border: none;
   border-radius: 12px;
   font-weight: 700;
@@ -165,7 +173,8 @@
 .primaryButton:disabled,
 .neutralButton:disabled,
 .secondaryButton:disabled,
-.ghostButton:disabled {
+.ghostButton:disabled,
+.dangerButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   box-shadow: none;
@@ -189,10 +198,17 @@
   border: 1px dashed var(--border);
 }
 
+.dangerButton {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
 .primaryButton:not(:disabled):hover,
 .neutralButton:not(:disabled):hover,
 .secondaryButton:not(:disabled):hover,
-.ghostButton:not(:disabled):hover {
+.ghostButton:not(:disabled):hover,
+.dangerButton:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
 }
@@ -249,8 +265,6 @@
   .panelHeader {
     flex-direction: column;
   }
-
-  .healthCard,
   .resetCard {
     flex-direction: column;
     align-items: flex-start;

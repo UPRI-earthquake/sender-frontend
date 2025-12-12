@@ -63,7 +63,6 @@ function DeviceInfoContainer(props) {
   const [elevation, setElevation] = useState('Not Set');
   const [status, setStatus] = useState('Not Linked');
   const [prefillLocation, setPrefillLocation] = useState({ longitude: '', latitude: '', elevation: '' });
-  const [healthStatus, setHealthStatus] = useState({ network: null, time: null, checking: false });
   const [tokenStatus, setTokenStatus] = useState({ state: 'missing' });
 
   // TOASTS
@@ -116,29 +115,6 @@ function DeviceInfoContainer(props) {
     }
   }
 
-  const runHealthChecks = async () => {
-    setHealthStatus((prev) => ({ ...prev, checking: true }));
-
-    try {
-      const [networkResp, timeResp] = await Promise.all([
-        axios.get(`${backendHost}/health/network`),
-        axios.get(`${backendHost}/health/time`),
-      ]);
-
-      setHealthStatus({
-        checking: false,
-        network: networkResp.data.payload,
-        time: timeResp.data.payload,
-      });
-    } catch (error) {
-      console.log("Health check error: ", error);
-      setHealthStatus({ checking: false, network: null, time: null });
-      setToastMessage('Health check failed. See console for details.');
-      setToastType('error');
-      setTimeout(() => setToastMessage(''), 5000);
-    }
-  }
-
   useEffect(() => {
     getDeviceInfo()
   }, [backendHost])
@@ -187,15 +163,6 @@ function DeviceInfoContainer(props) {
       }, 5000);
       setRefreshingToken(false);
     }
-  }
-
-  const healthSummary = () => {
-    if (healthStatus.checking) return 'Running...';
-    if (!healthStatus.network && !healthStatus.time) return 'Not run';
-    const networkOk = healthStatus.network?.dns?.ok && healthStatus.network?.tcp?.ok && healthStatus.network?.https?.ok;
-    const offset = healthStatus.time?.offsetMs ?? null;
-    const offsetSummary = offset !== null ? `${Math.round(offset)} ms` : 'n/a';
-    return `${networkOk ? 'Network OK' : 'Check network'} • Clock offset: ${offsetSummary}`;
   }
 
   const tokenStatusDetails = useMemo(() => {
@@ -290,13 +257,18 @@ function DeviceInfoContainer(props) {
     }
   };
 
-  const infoItems = [
+  const networkItems = [
     { label: 'Network', value: network },
     { label: 'Station', value: station },
-    { label: 'Longitude', value: longitude },
+  ];
+
+  const locationItems = [
     { label: 'Latitude', value: latitude },
+    { label: 'Longitude', value: longitude },
     { label: 'Elevation', value: elevation },
   ];
+
+  const isLinked = status === 'Linked';
 
   //MODAL STATES
   const [showDeviceLinkModal, setDeviceLinkModalShow] = useState(false);
@@ -322,23 +294,29 @@ function DeviceInfoContainer(props) {
       </div>
 
       <div className={styles.panelBody}>
-        <div className={styles.infoGrid}>
-          {infoItems.map((item) => (
-            <div key={item.label} className={styles.infoItem}>
-              <p className={styles.infoLabel}>{item.label}</p>
-              <p className={styles.infoValue}>{item.value}</p>
+        <div className={styles.infoSections}>
+          <div className={styles.infoSection}>
+            <p className={styles.sectionLabel}>Network &amp; Station</p>
+            <div className={`${styles.infoGrid} ${styles.twoColumn}`}>
+              {networkItems.map((item) => (
+                <div key={item.label} className={styles.infoItem}>
+                  <p className={styles.infoLabel}>{item.label}</p>
+                  <p className={styles.infoValue}>{item.value}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <div className={styles.healthCard}>
-          <div>
-            <p className={styles.sectionLabel}>Device health</p>
-            <p className={styles.healthSummary}>{healthSummary()}</p>
           </div>
-          <button className={styles.ghostButton} onClick={runHealthChecks} disabled={healthStatus.checking}>
-            {healthStatus.checking ? 'Checking...' : 'Run checks'}
-          </button>
+          <div className={styles.infoSection}>
+            <p className={styles.sectionLabel}>Location</p>
+            <div className={`${styles.infoGrid} ${styles.locationGrid}`}>
+              {locationItems.map((item) => (
+                <div key={item.label} className={styles.infoItem}>
+                  <p className={styles.infoLabel}>{item.label}</p>
+                  <p className={styles.infoValue}>{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className={styles.actionsRow}>

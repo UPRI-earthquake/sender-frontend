@@ -5,6 +5,12 @@ import Toast from '../Toast';
 
 import axios from 'axios';
 
+const formatTimestamp = (timestampMs) => {
+  if (!timestampMs) return null;
+  const date = new Date(timestampMs);
+  return date.toLocaleString(undefined, { hour12: false });
+};
+
 function ServersInfoContainer({ refreshFlag }) {
   const BASE_POLL_MS = 15000;
   const MAX_POLL_MS = 30000;
@@ -12,13 +18,27 @@ function ServersInfoContainer({ refreshFlag }) {
   //MODAL STATES
   const [showAddServerModal, setAddServerModalShow] = useState(false);
   const [servers, setServers] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [showErrorDetails, setShowErrorDetails] = useState(false);
   const [pollDelay, setPollDelay] = useState(BASE_POLL_MS);
   const [pageVisible, setPageVisible] = useState(!document.hidden);
   const pollTimer = useRef(null);
+  const [expandedLogs, setExpandedLogs] = useState({});
+  const [truncatedLogs, setTruncatedLogs] = useState({});
+  const logTextRefs = useRef({});
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('success')
+
+  const showToast = (message, type = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+
+    setTimeout(() => {
+      setToastMessage('');
+    }, 5000);
+  };
 
   const fetchServers = useCallback(async () => {
     try {
@@ -28,13 +48,18 @@ function ServersInfoContainer({ refreshFlag }) {
       const response = await axios.get(`${backend_host}/stream/status`);
       const serversData = response.data.payload;
       const serversList = Object.keys(serversData).map((url) => {
+        const serverEntry = serversData[url] || {};
+        const logPayload = serverEntry.logs || serverEntry.recentLogs || serverEntry.lastErrors || [];
         return {
-          institutionName: serversData[url].institutionName,
+          institutionName: serverEntry.institutionName,
           url: url,
-          status: serversData[url].status
+          status: serverEntry.status,
+          retryCount: serverEntry.retryCount,
+          logs: logPayload,
         };
       });
       setServers(serversList);
+      setLastUpdated(Date.now());
       setPollDelay(BASE_POLL_MS);
     } catch (error) {
       console.log('Error fetching servers:', error);
@@ -48,14 +73,7 @@ function ServersInfoContainer({ refreshFlag }) {
 
   const handleAddServer = async () => {
     await fetchServers();
-
-    // Set Toast Message
-    setToastMessage('New Server Added');
-    setToastType('success');
-
-    setTimeout(() => {
-      setToastMessage('');
-    }, 5000);
+    showToast('New server added');
   }
 
   const statusClass = (status) => {
@@ -66,6 +84,56 @@ function ServersInfoContainer({ refreshFlag }) {
     if (normalized.includes('stream')) return styles.statusSuccess;
     return styles.statusMuted;
   };
+
+  const hasErrorStatus = (status) => (status || '').toLowerCase().includes('error');
+
+  const handleRemoveServer = async (url) => {
+    if (!url) return;
+    try {
+      const backend_host = process.env.NODE_ENV === 'production'
+        ? `${window.location.origin}/api`
+        : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
+      await axios.post(`${backend_host}/servers/remove`, { url });
+      showToast('Server removed');
+      await fetchServers();
+    } catch (error) {
+      console.log('Remove server failed:', error);
+      showToast('Unable to remove server. See console for details.', 'error');
+    }
+  };
+
+  const extractLogs = (server) => {
+    if (!server) return null;
+    if (Array.isArray(server.logs) && server.logs.length) return server.logs;
+    if (Array.isArray(server.recentLogs) && server.recentLogs.length) return server.recentLogs;
+    if (Array.isArray(server.lastErrors) && server.lastErrors.length) return server.lastErrors;
+    return null;
+  };
+
+  const toggleLog = (logKey) => {
+    setExpandedLogs((prev) => ({
+      ...prev,
+      [logKey]: !prev[logKey],
+    }));
+  };
+
+  const registerLogTextRef = (logKey) => (el) => {
+    if (el) {
+      logTextRefs.current[logKey] = el;
+    } else {
+      delete logTextRefs.current[logKey];
+    }
+  };
+
+  const measureTruncation = useCallback(() => {
+    const next = {};
+    Object.entries(logTextRefs.current).forEach(([logKey, el]) => {
+      if (el) {
+        next[logKey] = el.scrollWidth > el.clientWidth;
+      }
+    });
+    setTruncatedLogs(next);
+  }, []);
 
   useEffect(() => {
     const onVisibilityChange = () => setPageVisible(!document.hidden);
@@ -101,6 +169,25 @@ function ServersInfoContainer({ refreshFlag }) {
     };
   }, [fetchServers, pageVisible, pollDelay]);
 
+  useEffect(() => {
+    if (!showErrorDetails) return;
+    measureTruncation();
+    const onResize = () => measureTruncation();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [servers, measureTruncation, showErrorDetails]);
+
+  const errorServers = servers.filter((server) => hasErrorStatus(server.status));
+  const updatedLabel = formatTimestamp(lastUpdated);
+  const issueCount = errorServers.length;
+  const issueHeadline = issueCount === 1
+    ? '1 streaming issue detected'
+    : `${issueCount} streaming issues detected`;
+  const issueInstitutions = errorServers
+    .map((server) => server.institutionName || server.url)
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <div className={styles.serversInfo}>
       <Toast message={toastMessage} toastType={toastType}></Toast>
@@ -112,45 +199,154 @@ function ServersInfoContainer({ refreshFlag }) {
           <h2 className={styles.title}>Servers Information</h2>
           <p className={styles.subtext}>Ringserver endpoints configured for this sender.</p>
         </div>
-        <button
-          className={styles.primaryButton}
-          onClick={() => setAddServerModalShow(true)}
-        >Add server</button>
+        <div className={styles.headerActions}>
+          <button
+            className={styles.primaryButton}
+            onClick={() => setAddServerModalShow(true)}
+          >Add server</button>
+        </div>
       </div>
       <div className={styles.panelBody}>
-        <div className={styles.serversTableContainer}>
-          <table className={styles.serversTable}>
-            <thead>
-              <tr>
-                <th>Institution</th>
-                <th>Server URL</th>
-                <th>Stream Status</th>
-              </tr>
-            </thead>
-
-            {servers.length > 0 ? (
-              <tbody>
-                {servers.map((server) => (
-                  <tr key={server.url}>
-                    <td>{server.institutionName}</td>
-                    <td>{server.url}</td>
-                    <td>
-                      <span className={`${styles.statusChip} ${statusClass(server.status)}`}>
-                        {server.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            ) : (
-              <tbody>
-                <tr>
-                  <td colSpan={3} className={styles.emptyState}>No servers added yet.</td>
-                </tr>
-              </tbody>
+        {errorServers.length > 0 && (
+          <>
+            <div className={styles.errorBanner}>
+              <div>
+                <p className={styles.errorTitle}>{issueHeadline}</p>
+                {issueInstitutions && (
+                  <p className={styles.errorList}>{issueInstitutions}</p>
+                )}
+              </div>
+              <div className={styles.errorActions}>
+                <button
+                  className={styles.ghostButton}
+                  onClick={() => setShowErrorDetails((prev) => !prev)}
+                >
+                  {showErrorDetails ? 'Hide details' : 'View details'}
+                </button>
+              </div>
+            </div>
+            {showErrorDetails && (
+              <div className={styles.errorDetails}>
+                {errorServers.map((server) => {
+                  const logs = extractLogs(server) || [];
+                  const total = logs.length;
+                  return (
+                    <div key={server.url} className={styles.errorDetailRow}>
+                      <div className={styles.errorMeta}>
+                        <p className={styles.errorLabel}>{server.institutionName || 'Server'}</p>
+                        <p className={`${styles.errorUrl} ${styles.truncate}`} title={server.url}>{server.url}</p>
+                        {typeof server.retryCount === 'number' && (
+                          <p className={styles.errorMetaHelper}>
+                            {server.retryCount} {server.retryCount === 1 ? 'retry' : 'retries'}
+                          </p>
+                        )}
+                      </div>
+                      <div className={styles.errorLogColumn}>
+                        <p className={styles.logHeading}>Recent error log</p>
+                        {total ? (
+                          <ul className={styles.logList}>
+                            {logs.map((entry, index) => {
+                              const logKey = `${server.url}-log-${index}`;
+                              const expanded = Boolean(expandedLogs[logKey]);
+                              const text = typeof entry === 'string' ? entry : JSON.stringify(entry);
+                              const needsToggle = text.length > 100;
+                              const isTruncated = truncatedLogs[logKey];
+                              const showToggle = needsToggle || isTruncated;
+                              return (
+                                <li key={logKey} className={styles.logListItem}>
+                                  <span
+                                    ref={registerLogTextRef(logKey)}
+                                    className={`${styles.logText} ${!expanded ? styles.truncate : ''}`}
+                                    title={text}
+                                  >
+                                    {text}
+                                  </span>
+                                  {showToggle && (
+                                    <button
+                                      className={styles.logToggle}
+                                      onClick={() => toggleLog(logKey)}
+                                    >
+                                      {expanded ? 'Collapse' : 'Expand'}
+                                    </button>
+                                  )}
+                                </li>
+                              );
+                            })}
+                            {total > 0 && (
+                              <li className={styles.logMeta}>Showing logs from the latest retry ({total} entries)</li>
+                            )}
+                          </ul>
+                        ) : (
+                          <p className={styles.logEmpty}>No error log details available.</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
+          </>
+        )}
+        <div className={styles.serversTableContainer}>
+          <div className={styles.serversTableScroll}>
+            <table className={styles.serversTable}>
+              <thead>
+                <tr>
+                  <th>Institution</th>
+                  <th>Server URL</th>
+                  <th>Stream Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
 
-          </table>
+              <tbody>
+                {servers.length > 0 ? (
+                  servers.map((server) => (
+                    <tr key={server.url} className={hasErrorStatus(server.status) ? styles.errorRow : ''}>
+                      <td className={styles.cellInstitution}>
+                        <span className={styles.cellLabel}>Institution</span>
+                        <span className={`${styles.cellValue} ${styles.truncate}`} title={server.institutionName || '—'}>
+                          {server.institutionName || '—'}
+                        </span>
+                      </td>
+                      <td className={styles.cellUrl}>
+                        <span className={styles.cellLabel}>Server URL</span>
+                        <span className={`${styles.urlText} ${styles.truncate}`} title={server.url}>
+                          {server.url}
+                        </span>
+                      </td>
+                      <td className={styles.cellStatus}>
+                        <span className={styles.cellLabel}>Stream Status</span>
+                        <div className={styles.statusCell}>
+                          <span className={`${styles.statusChip} ${statusClass(server.status)}`}>
+                            {server.status}
+                          </span>
+                        </div>
+                      </td>
+                      <td className={styles.cellActions}>
+                        <span className={styles.cellLabel}>Action</span>
+                        <button
+                          className={styles.actionButton}
+                          onClick={() => handleRemoveServer(server.url)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className={styles.emptyState}>No servers added yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className={styles.panelFooter}>
+          <span className={styles.timestamp}>
+            {updatedLabel ? updatedLabel : 'Waiting for first check'}
+          </span>
         </div>
       </div>
     </div>
