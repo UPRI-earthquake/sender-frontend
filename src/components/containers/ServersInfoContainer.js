@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { default as AddServerModal } from './../modals/AddServerModal';
+import { default as RemoveServerModal } from './../modals/RemoveServerModal';
 import styles from "./ServersInfoContainer.module.css";
 import Toast from '../Toast';
 
@@ -26,6 +27,7 @@ function ServersInfoContainer({ refreshFlag }) {
   const [expandedLogs, setExpandedLogs] = useState({});
   const [truncatedLogs, setTruncatedLogs] = useState({});
   const logTextRefs = useRef({});
+  const [serverPendingRemoval, setServerPendingRemoval] = useState(null);
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
@@ -244,38 +246,44 @@ function ServersInfoContainer({ refreshFlag }) {
                       <div className={styles.errorLogColumn}>
                         <p className={styles.logHeading}>Recent error log</p>
                         {total ? (
-                          <ul className={styles.logList}>
-                            {logs.map((entry, index) => {
-                              const logKey = `${server.url}-log-${index}`;
-                              const expanded = Boolean(expandedLogs[logKey]);
-                              const text = typeof entry === 'string' ? entry : JSON.stringify(entry);
-                              const needsToggle = text.length > 100;
-                              const isTruncated = truncatedLogs[logKey];
-                              const showToggle = needsToggle || isTruncated;
-                              return (
-                                <li key={logKey} className={styles.logListItem}>
-                                  <span
-                                    ref={registerLogTextRef(logKey)}
-                                    className={`${styles.logText} ${!expanded ? styles.truncate : ''}`}
-                                    title={text}
-                                  >
-                                    {text}
-                                  </span>
-                                  {showToggle && (
-                                    <button
-                                      className={styles.logToggle}
-                                      onClick={() => toggleLog(logKey)}
-                                    >
-                                      {expanded ? 'Collapse' : 'Expand'}
-                                    </button>
-                                  )}
-                                </li>
-                              );
-                            })}
+                          <div className={styles.errorTableWrapper}>
+                            <table className={styles.errorTable}>
+                              <tbody>
+                                {logs.map((entry, index) => {
+                                  const logKey = `${server.url}-log-${index}`;
+                                  const expanded = Boolean(expandedLogs[logKey]);
+                                  const text = typeof entry === 'string' ? entry : JSON.stringify(entry);
+                                  const needsToggle = text.length > 100;
+                                  const isTruncated = truncatedLogs[logKey];
+                                  const showToggle = needsToggle || isTruncated;
+                                  return (
+                                    <tr key={logKey}>
+                                      <td className={styles.logCell}>
+                                        <span
+                                          ref={registerLogTextRef(logKey)}
+                                          className={`${styles.logText} ${!expanded ? styles.truncate : ''}`}
+                                          title={text}
+                                        >
+                                          {text}
+                                        </span>
+                                        {showToggle && (
+                                          <button
+                                            className={styles.logToggle}
+                                            onClick={() => toggleLog(logKey)}
+                                          >
+                                            {expanded ? 'Show less' : 'Show more'}
+                                          </button>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
                             {total > 0 && (
-                              <li className={styles.logMeta}>Showing logs from the latest retry ({total} entries)</li>
+                              <div className={styles.logMeta}>Showing logs from the latest retry ({total} entries)</div>
                             )}
-                          </ul>
+                          </div>
                         ) : (
                           <p className={styles.logEmpty}>No error log details available.</p>
                         )}
@@ -287,6 +295,15 @@ function ServersInfoContainer({ refreshFlag }) {
             )}
           </>
         )}
+        {serverPendingRemoval && (
+          <RemoveServerModal
+            url={serverPendingRemoval.url}
+            institutionName={serverPendingRemoval.institutionName}
+            onConfirm={handleRemoveServer}
+            onModalClose={() => setServerPendingRemoval(null)}
+          />
+        )}
+
         <div className={styles.serversTableContainer}>
           <div className={styles.serversTableScroll}>
             <table className={styles.serversTable}>
@@ -327,7 +344,10 @@ function ServersInfoContainer({ refreshFlag }) {
                         <span className={styles.cellLabel}>Action</span>
                         <button
                           className={styles.actionButton}
-                          onClick={() => handleRemoveServer(server.url)}
+                          onClick={() => setServerPendingRemoval({
+                            url: server.url,
+                            institutionName: server.institutionName,
+                          })}
                         >
                           Remove
                         </button>

@@ -64,6 +64,8 @@ function DeviceInfoContainer(props) {
   const [status, setStatus] = useState('Not Linked');
   const [prefillLocation, setPrefillLocation] = useState({ longitude: '', latitude: '', elevation: '' });
   const [tokenStatus, setTokenStatus] = useState({ state: 'missing' });
+  const [refreshTokenStatus, setRefreshTokenStatus] = useState({ state: 'missing' });
+  const [refreshingMetadata, setRefreshingMetadata] = useState(false);
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
@@ -109,6 +111,7 @@ function DeviceInfoContainer(props) {
         elevation: formattedElevation || '',
       });
       setTokenStatus(deviceInfo.tokenStatus || { state: 'missing' });
+      setRefreshTokenStatus(deviceInfo.refreshTokenStatus || { state: 'missing' });
 
     } catch (error) {
       console.log("Axios Error: " + error)
@@ -155,8 +158,10 @@ function DeviceInfoContainer(props) {
       setToastType('success');
     } catch (error) {
       console.log(error);
+      const backendMessage = error?.response?.data?.message;
       setToastType('error');
-      setToastMessage('Unable to refresh token. See console for details.');
+      setToastMessage(backendMessage || 'Unable to refresh token. See console for details.');
+      await getDeviceInfo();
     } finally {
       setTimeout(() => {
         setToastMessage('');
@@ -164,6 +169,26 @@ function DeviceInfoContainer(props) {
       setRefreshingToken(false);
     }
   }
+
+  const handleRefreshHostMetadata = async () => {
+    setRefreshingMetadata(true);
+    try {
+      await axios.post(`${backendHost}/device/config/refresh`);
+      await getDeviceInfo();
+      setToastType('success');
+      setToastMessage('Location values refreshed from RShake config');
+    } catch (error) {
+      console.log(error);
+      const errorSummary = error?.response?.data?.message;
+      setToastType('error');
+      setToastMessage(errorSummary || 'Unable to read metadata from RShake config.');
+    } finally {
+      setTimeout(() => {
+        setToastMessage('');
+      }, 5000);
+      setRefreshingMetadata(false);
+    }
+  };
 
   const tokenStatusDetails = useMemo(() => {
     const state = tokenStatus?.state;
@@ -244,6 +269,22 @@ function DeviceInfoContainer(props) {
     }
   }, [tokenStatus]);
 
+  const relinkNotice = useMemo(() => {
+    const refreshState = refreshTokenStatus?.state;
+    const linked = status === 'Linked';
+    const needsRelinkStates = ['invalid', 'expired', 'corrupted'];
+    const needsRelink = needsRelinkStates.includes(refreshState) || (refreshState === 'missing' && linked);
+    if (!needsRelink) {
+      return { required: false, helper: '' };
+    }
+    const reason = refreshTokenStatus?.reason ? String(refreshTokenStatus.reason).trim() : '';
+    const reasonPrefix = reason ? `${reason}${reason.endsWith('.') ? ' ' : '. '}` : '';
+    return {
+      required: true,
+      helper: `${reasonPrefix}Unlink and relink this device to generate new credentials.`,
+    };
+  }, [refreshTokenStatus, status]);
+
   const pillTone = (tone) => {
     switch (tone) {
       case 'success':
@@ -285,7 +326,7 @@ function DeviceInfoContainer(props) {
         <div>
           <p className={styles.kicker}>Device</p>
           <h2 className={styles.title}>Device Information</h2>
-          <p className={styles.subtext}>Values prefill from your RShake config. Adjust in rs.local before linking.</p>
+          <p className={styles.subtext}>Values prefill from RShake config. Adjust in rs.local before linking.</p>
         </div>
         <div className={styles.badgeStack}>
           <span className={`${styles.statusPill} ${pillTone(status === 'Linked' ? 'success' : 'warn')}`}>{status}</span>
@@ -294,6 +335,14 @@ function DeviceInfoContainer(props) {
       </div>
 
       <div className={styles.panelBody}>
+        {relinkNotice.required && (
+          <div className={`${styles.alertCard} ${styles.alertDanger}`}>
+            <div>
+              <p className={styles.alertTitle}>Relink required</p>
+              <p className={styles.alertBody}>{relinkNotice.helper}</p>
+            </div>
+          </div>
+        )}
         <div className={styles.infoSections}>
           <div className={styles.infoSection}>
             <p className={styles.sectionLabel}>Network &amp; Station</p>
@@ -307,7 +356,63 @@ function DeviceInfoContainer(props) {
             </div>
           </div>
           <div className={styles.infoSection}>
-            <p className={styles.sectionLabel}>Location</p>
+            <div className={styles.sectionLabelRow}>
+              <div>
+                <p className={styles.sectionLabel}>Location</p>
+                <p className={styles.sectionHelper}>Synced from device host configuration.</p>
+              </div>
+              <span className={styles.iconOrnament}>
+                <button
+                  type="button"
+                  className={`${styles.iconButton} ${refreshingMetadata ? styles.iconButtonRefreshing : ''}`}
+                  onClick={handleRefreshHostMetadata}
+                  disabled={refreshingMetadata}
+                  title="Refresh from RShake config"
+                  aria-label="Refresh location from RShake config"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polyline
+                      points="23 4 23 10 17 10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <polyline
+                      points="1 20 1 14 7 14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </span>
+            </div>
             <div className={`${styles.infoGrid} ${styles.locationGrid}`}>
               {locationItems.map((item) => (
                 <div key={item.label} className={styles.infoItem}>
@@ -348,6 +453,7 @@ function DeviceInfoContainer(props) {
               onClick={handleManualTokenRefresh}
               disabled={
                 refreshingToken
+                || relinkNotice.required
                 || (tokenStatus?.state === 'valid' && !tokenStatus?.expiringSoon)
                 || tokenStatus?.state === 'missing'
               }

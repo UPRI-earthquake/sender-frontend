@@ -35,6 +35,14 @@
 .subtitle {
   margin: 0;
   color: var(--muted);
+  line-height: 1.4;
+  max-width: 520px;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .headerActions {
@@ -109,14 +117,22 @@
 .checkHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.checkHeaderBody {
+  flex: 1;
+  min-width: 220px;
 }
 
 .checkSummary {
   margin: 6px 0 0;
   color: var(--text-primary);
   font-weight: 700;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .sectionLabel {
@@ -130,6 +146,7 @@
 .statusPill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 6px 12px;
   border-radius: 999px;
@@ -139,7 +156,10 @@
   border: 1px solid var(--border);
   background: #f8fafc;
   color: var(--muted);
-  white-space: nowrap;
+  white-space: normal;
+  flex-shrink: 0;
+  max-width: 100%;
+  text-align: center;
 }
 
 .pillSuccess {
@@ -174,8 +194,9 @@
 
 .detailGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
+  align-items: stretch;
 }
 
 .detailItem {
@@ -183,6 +204,9 @@
   border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: var(--radius-md);
   background: #ffffff;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .detailLabel {
@@ -191,12 +215,33 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
+  display: block;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .detailValue {
   margin: 6px 0 0;
   font-weight: 600;
   color: #0f172a;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.detailToggle {
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.detailToggle:hover {
+  text-decoration: underline;
 }
 
 .tone-success {
@@ -259,5 +304,13 @@
 @media (max-width: 640px) {
   .panelHeader {
     flex-direction: column;
+  }
+
+  .checkHeaderBody {
+    min-width: 0;
+  }
+
+  .statusPill {
+    width: 100%;
   }
 }

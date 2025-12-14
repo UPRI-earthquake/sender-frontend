@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import styles from './DeviceHealthContainer.module.css';
 
@@ -17,6 +17,43 @@ const formatOffset = (offsetMs) => {
   return `${sign}${rounded} ms`;
 };
 
+const summarizeAttempts = (attempts) => {
+  if (!Array.isArray(attempts) || attempts.length === 0) {
+    return 'n/a';
+  }
+  return attempts
+    .map((attempt) => {
+      const hostLabel = attempt?.hostname
+        ? `${attempt.hostname}${attempt?.port ? `:${attempt.port}` : ''}`
+        : 'unknown';
+      return attempt?.ok ? `${hostLabel} (ok)` : `${hostLabel} (err: ${attempt?.error || 'failed'})`;
+    })
+    .join(', ');
+};
+
+const formatRingserverLabel = (ringserver) => {
+  if (!ringserver) {
+    return 'Ringserver';
+  }
+  const friendlyName = ringserver?.source?.institutionName || ringserver?.label;
+  const host = ringserver?.target?.hostname;
+  const port = ringserver?.target?.port;
+  const hostPort = host ? `${host}${port ? `:${port}` : ''}` : null;
+  if (friendlyName && hostPort) {
+    return `${friendlyName} (${hostPort})`;
+  }
+  if (friendlyName) {
+    return friendlyName;
+  }
+  if (hostPort) {
+    return hostPort;
+  }
+  if (ringserver?.source?.url) {
+    return ringserver.source.url;
+  }
+  return 'Ringserver';
+};
+
 const buildNetworkDetails = (network) => {
   if (!network) {
     return [
@@ -25,7 +62,7 @@ const buildNetworkDetails = (network) => {
       { label: 'HTTPS', value: 'Awaiting check', tone: 'muted' },
     ];
   }
-  return [
+  const details = [
     {
       label: 'DNS',
       value: network?.dns?.ok ? network.dns.address || 'Resolved' : network?.dns?.error || 'Lookup failed',
@@ -44,6 +81,34 @@ const buildNetworkDetails = (network) => {
       tone: network?.https?.ok ? 'success' : 'danger',
     },
   ];
+
+  const ringservers = Array.isArray(network?.ringservers) ? network.ringservers : [];
+  ringservers.forEach((ringserver) => {
+    let tone = 'muted';
+    let value = 'Awaiting check';
+    if (ringserver?.error) {
+      tone = 'danger';
+      value = ringserver.error;
+    } else if (!ringserver?.dns?.ok) {
+      tone = 'danger';
+      value = ringserver?.dns?.error || 'DNS lookup failed';
+    } else if (!ringserver?.tcp?.ok) {
+      tone = 'danger';
+      value = ringserver?.tcp?.error || 'TCP connection failed';
+    } else if (ringserver?.dns?.ok && ringserver?.tcp?.ok) {
+      tone = 'success';
+      const portSuffix = ringserver?.target?.port ? ` (port ${ringserver.target.port})` : '';
+      value = `Reachable${portSuffix}`;
+    }
+
+    details.push({
+      label: formatRingserverLabel(ringserver),
+      value,
+      tone,
+    });
+  });
+
+  return details;
 };
 
 const buildTimeDetails = (timePayload) => {
@@ -56,12 +121,23 @@ const buildTimeDetails = (timePayload) => {
       : 'warn';
   const roundTrip = typeof timePayload?.roundTripMs === 'number' ? `${Math.round(timePayload.roundTripMs)} ms` : 'n/a';
   const serverDate = timePayload?.serverDate ? new Date(timePayload.serverDate).toLocaleString(undefined, { hour12: false }) : 'n/a';
+  const targetHost = timePayload?.target?.hostname
+    ? `${timePayload.target.hostname}${timePayload.target.port ? `:${timePayload.target.port}` : ''}`
+    : 'n/a';
+  const stratum = timePayload?.stratum || 'n/a';
+  const attemptsLabel = summarizeAttempts(timePayload?.attempts);
 
-  return [
+  const details = [
     { label: 'Clock offset', value: offsetLabel, tone: offsetTone },
     { label: 'Round trip', value: roundTrip, tone: 'muted' },
     { label: 'Server time', value: serverDate, tone: 'muted' },
   ];
+
+  details.push({ label: 'NTP target', value: targetHost, tone: 'muted' });
+  details.push({ label: 'Stratum', value: stratum, tone: 'muted' });
+  details.push({ label: 'Attempts', value: attemptsLabel, tone: 'muted' });
+
+  return details;
 };
 
 function DeviceHealthContainer() {
@@ -79,6 +155,57 @@ function DeviceHealthContainer() {
     lastRun: null,
   });
   const [showDetails, setShowDetails] = useState(false);
+  const [expandedDetails, setExpandedDetails] = useState({});
+  const [truncatedDetails, setTruncatedDetails] = useState({});
+  const detailRefs = useRef({});
+
+  const registerDetailRef = (key, field) => (el) => {
+    if (!detailRefs.current[key]) {
+      detailRefs.current[key] = {};
+    }
+    if (el) {
+      detailRefs.current[key][field] = el;
+    } else {
+      delete detailRefs.current[key][field];
+      if (Object.keys(detailRefs.current[key]).length === 0) {
+        delete detailRefs.current[key];
+      }
+    }
+  };
+
+  const toggleDetailExpansion = (key) => {
+    setExpandedDetails((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  useEffect(() => {
+    if (!showDetails) {
+      setTruncatedDetails({});
+      return undefined;
+    }
+    const measure = () => {
+      const next = {};
+      Object.entries(detailRefs.current).forEach(([key, refGroup]) => {
+        if (!refGroup) return;
+        const labelEl = refGroup.label;
+        const valueEl = refGroup.value;
+        const labelTruncated = Boolean(labelEl && labelEl.scrollWidth > labelEl.clientWidth + 1);
+        const valueTruncated = Boolean(valueEl && valueEl.scrollWidth > valueEl.clientWidth + 1);
+        if (labelTruncated || valueTruncated) {
+          next[key] = { label: labelTruncated, value: valueTruncated };
+        }
+      });
+      setTruncatedDetails(next);
+    };
+
+    measure();
+    window.addEventListener('resize', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+    };
+  }, [health, showDetails]);
 
   const runHealthChecks = async () => {
     setHealth((prev) => ({ ...prev, checking: true, error: null }));
@@ -116,19 +243,29 @@ function DeviceHealthContainer() {
   const hasResults = Boolean(health.network || health.time);
 
   const networkDetails = buildNetworkDetails(health.network);
-  const networkOk = networkDetails.every((detail) => detail.tone === 'success');
+  const ringserverResults = Array.isArray(health.network?.ringservers) ? health.network.ringservers : [];
+  const w1ChecksOk = Boolean(health.network?.dns?.ok && health.network?.tcp?.ok && health.network?.https?.ok);
+  const ringserversOk = ringserverResults.every((ringserver) => ringserver?.dns?.ok && ringserver?.tcp?.ok);
+  const networkOk = Boolean(health.network) && w1ChecksOk && ringserversOk;
+  const failingRingserver = ringserverResults.find((ringserver) => !(ringserver?.dns?.ok && ringserver?.tcp?.ok));
   const networkStatus = {
     label: !health.network ? 'Not run' : networkOk ? 'Pass' : 'Issue detected',
     tone: !health.network ? 'muted' : networkOk ? 'success' : 'danger',
     helper: !health.network
       ? 'Waiting for first check to populate DNS, TCP, and HTTPS reachability.'
       : networkOk
-        ? `Reachable at ${targetHost}.`
-        : `Check connectivity from this device to ${targetHost}.`,
+        ? ringserverResults.length
+          ? `Reachable at ${targetHost} and ${ringserverResults.length} downstream ringserver${ringserverResults.length > 1 ? 's' : ''}.`
+          : `Reachable at ${targetHost}.`
+        : failingRingserver
+          ? `Downstream ringserver unreachable: ${formatRingserverLabel(failingRingserver)}.`
+          : `Check connectivity from this device to ${targetHost}.`,
   };
 
   const offsetMs = typeof health.time?.offsetMs === 'number' ? health.time.offsetMs : null;
   const clockOk = typeof offsetMs === 'number' && Math.abs(offsetMs) <= 1500;
+  const ntpFixSteps = 'NTP blocked or misconfigured; SSH into the Raspberry Shake, edit /etc/ntp.conf to add "server 0.asia.pool.ntp.org" (per https://upri-earthquake.github.io/issues/rshake-ntp-issue.html), then restart the device.';
+
   const timeStatus = {
     label: !health.time ? 'Not run' : clockOk ? 'Pass' : 'Clock drift',
     tone: !health.time ? 'muted' : clockOk ? 'success' : 'warn',
@@ -136,7 +273,9 @@ function DeviceHealthContainer() {
       ? 'Waiting for first check to compare device time with EarthquakeHub.'
       : clockOk
         ? `Offset ${formatOffset(offsetMs)} vs ${targetHost}.`
-        : `Offset ${formatOffset(offsetMs) || 'unknown'}; consider NTP sync.`,
+        : typeof offsetMs === 'number'
+          ? `Offset ${formatOffset(offsetMs)} vs ${targetHost}. ${ntpFixSteps}`
+          : `NTP blocked or unreachable; ${ntpFixSteps}`,
   };
 
   const timeDetails = buildTimeDetails(health.time);
@@ -155,13 +294,55 @@ function DeviceHealthContainer() {
     }
   };
 
+  const renderDetailItems = (details, sectionKey) => (
+    details.map((detail, index) => {
+      const label = detail?.label || `Detail ${index + 1}`;
+      const rawValue = detail?.value ?? 'n/a';
+      const valueText = typeof rawValue === 'string' ? rawValue : String(rawValue);
+      const toneClass = styles[`tone-${detail.tone}`] || '';
+      const detailKey = `${sectionKey}-${index}`;
+      const isExpanded = Boolean(expandedDetails[detailKey]);
+      const truncatedMeta = truncatedDetails[detailKey] || {};
+      const isTruncated = Boolean(truncatedMeta.label || truncatedMeta.value);
+      const showToggle = isTruncated || isExpanded;
+
+      return (
+        <div key={`${label}-${index}`} className={`${styles.detailItem} ${toneClass}`}>
+          <p
+            ref={registerDetailRef(detailKey, 'label')}
+            className={`${styles.detailLabel} ${!isExpanded ? styles.truncate : ''}`}
+            title={label}
+          >
+            {label}
+          </p>
+          <p
+            ref={registerDetailRef(detailKey, 'value')}
+            className={`${styles.detailValue} ${!isExpanded ? styles.truncate : ''}`}
+            title={valueText || ''}
+          >
+            {valueText || 'n/a'}
+          </p>
+          {showToggle && (
+            <button
+              type="button"
+              className={styles.detailToggle}
+              onClick={() => toggleDetailExpansion(detailKey)}
+            >
+              {isExpanded ? 'Show less' : 'Show more'}
+            </button>
+          )}
+        </div>
+      );
+    })
+  );
+
   return (
     <div className={styles.deviceHealth}>
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.kicker}>Health</p>
           <h2 className={styles.title}>Device health checks</h2>
-          <p className={styles.subtitle}>Optional connectivity and clock alignment checks to EarthquakeHub services.</p>
+          <p className={styles.subtitle}>Connectivity and clock alignment checks against EarthquakeHub plus each configured ringserver.</p>
         </div>
         <div className={styles.headerActions}>
           <button
@@ -184,40 +365,40 @@ function DeviceHealthContainer() {
         <div className={styles.checksGrid}>
           <div className={styles.checkCard}>
             <div className={styles.checkHeader}>
-              <div>
+              <div className={styles.checkHeaderBody}>
                 <p className={styles.sectionLabel}>Network path</p>
-                <p className={styles.checkSummary}>{networkStatus.helper}</p>
+                <p className={styles.checkSummary} title={networkStatus.helper || ''}>{networkStatus.helper}</p>
               </div>
-              <span className={`${styles.statusPill} ${pillTone(networkStatus.tone)}`}>{networkStatus.label}</span>
+              <span
+                className={`${styles.statusPill} ${pillTone(networkStatus.tone)}`}
+                title={networkStatus.label || ''}
+              >
+                {networkStatus.label}
+              </span>
             </div>
             {showDetails && (
               <div className={styles.detailGrid}>
-                {networkDetails.map((detail) => (
-                  <div key={detail.label} className={`${styles.detailItem} ${styles[`tone-${detail.tone}`] || ''}`}>
-                    <p className={styles.detailLabel}>{detail.label}</p>
-                    <p className={styles.detailValue}>{detail.value}</p>
-                  </div>
-                ))}
+                {renderDetailItems(networkDetails, 'network')}
               </div>
             )}
           </div>
 
           <div className={styles.checkCard}>
             <div className={styles.checkHeader}>
-              <div>
+              <div className={styles.checkHeaderBody}>
                 <p className={styles.sectionLabel}>Clock sync</p>
-                <p className={styles.checkSummary}>{timeStatus.helper}</p>
+                <p className={styles.checkSummary} title={timeStatus.helper || ''}>{timeStatus.helper}</p>
               </div>
-              <span className={`${styles.statusPill} ${pillTone(timeStatus.tone)}`}>{timeStatus.label}</span>
+              <span
+                className={`${styles.statusPill} ${pillTone(timeStatus.tone)}`}
+                title={timeStatus.label || ''}
+              >
+                {timeStatus.label}
+              </span>
             </div>
             {showDetails && (
               <div className={styles.detailGrid}>
-                {timeDetails.map((detail) => (
-                  <div key={detail.label} className={`${styles.detailItem} ${styles[`tone-${detail.tone}`] || ''}`}>
-                    <p className={styles.detailLabel}>{detail.label}</p>
-                    <p className={styles.detailValue}>{detail.value}</p>
-                  </div>
-                ))}
+                {renderDetailItems(timeDetails, 'time')}
               </div>
             )}
           </div>
