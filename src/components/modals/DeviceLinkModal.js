@@ -43,12 +43,45 @@ function DeviceLinkModal(props) {
   }, [props.prefillLocation]);
 
   // TOASTS
-  const [toastMessage, setToastMessage] = useState('')
+ const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('error')
 
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceLink = async (event) => {
 		event.preventDefault();
+
+    const trimmedLongitude = String(inputLongitude || '').trim();
+    const trimmedLatitude = String(inputLatitude || '').trim();
+    const trimmedElevation = String(inputElevation || '').trim();
+
+    const lon = Number(trimmedLongitude);
+    const lat = Number(trimmedLatitude);
+    const elev = Number(trimmedElevation);
+
+    if (!trimmedLongitude || !trimmedLatitude || !trimmedElevation) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Longitude, latitude, and elevation are required.');
+      return;
+    }
+
+    if (Number.isNaN(lon) || lon < -180 || lon > 180) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Longitude must be a number between −180 and 180.');
+      return;
+    }
+
+    if (Number.isNaN(lat) || lat < -90 || lat > 90) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Latitude must be a number between −90 and 90.');
+      return;
+    }
+
+    if (Number.isNaN(elev)) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Elevation must be a numeric value.');
+      return;
+    }
+
     setLoadingScreen(true);
 
 		try {
@@ -58,9 +91,9 @@ function DeviceLinkModal(props) {
 			await axios.post(`${backend_host}/device/link`, {
 				username: inputUsername,
 				password: inputPassword,
-        longitude: String(inputLongitude),
-        latitude: String(inputLatitude),
-        elevation: String(inputElevation),
+        longitude: String(trimmedLongitude),
+        latitude: String(trimmedLatitude),
+        elevation: String(trimmedElevation),
 			});
 
 			setInputUsername('');
@@ -153,28 +186,38 @@ function DeviceLinkModal(props) {
               <div className={styles.inputField}>
                 <input
                   className={styles.modalInput}
+                  type="number"
+                  step="0.000001"
+                  min="-180"
+                  max="180"
                   value={inputLongitude}
                   onChange={(e) => setInputLongitude(e.target.value)}
                 />
-                <label className={styles.inputLabel}>Longitude: <small>(in degree coordinates. e.g. `10.1234`)</small></label>
+                <label className={styles.inputLabel}>Longitude: <small>(in degree coordinates, −180 to 180; e.g. `10.1234`)</small></label>
               </div>
 
               <div className={styles.inputField}>
                 <input
                   className={styles.modalInput}
+                  type="number"
+                  step="0.000001"
+                  min="-90"
+                  max="90"
                   value={inputLatitude}
                   onChange={(e) => setInputLatitude(e.target.value)}
                 />
-                <label className={styles.inputLabel}>Latitude: <small>(in degree coordinates. e.g. `10.1234`)</small></label>
+                <label className={styles.inputLabel}>Latitude: <small>(in degree coordinates, −90 to 90; e.g. `10.1234`)</small></label>
               </div>
 
               <div className={styles.inputField}>
                 <input
                   className={styles.modalInput}
+                  type="number"
+                  step="0.01"
                   value={inputElevation}
                   onChange={(e) => setInputElevation(e.target.value)}
                 />
-                <label className={styles.inputLabel}>Elevation: <small>(in meters; relative to sea level e.g. `1.232314`)</small></label>
+                <label className={styles.inputLabel}>Elevation: <small>(in meters; relative to sea level e.g. `1.23`)</small></label>
               </div>
             </div>
 
