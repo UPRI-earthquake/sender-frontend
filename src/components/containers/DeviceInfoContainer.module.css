@@ -90,33 +90,6 @@
   flex: 1;
 }
 
-.alertCard {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.alertDanger {
-  border-color: rgba(185, 28, 28, 0.35);
-  background: #fef2f2;
-}
-
-.alertTitle {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: #991b1b;
-}
-
-.alertBody {
-  margin: 0;
-  color: #7f1d1d;
-  line-height: 1.4;
-}
-
 .infoSections {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -251,54 +224,6 @@
 .dangerButton:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
-}
-
-.resetCard {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: #ffffff;
-}
-
-.tokenHeadline {
-  margin: 6px 0 4px;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.tokenHelper {
-  margin: 0;
-  color: var(--muted);
-}
-
-.tone-success {
-  color: #15803d;
-}
-
-.tone-warn {
-  color: #b45309;
-}
-
-.tone-danger {
-  color: #b91c1c;
-}
-
-.tone-muted {
-  color: var(--muted);
-}
-
-.resetActions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.resetHint {
-  color: var(--muted);
 }
 
 .iconOrnament {

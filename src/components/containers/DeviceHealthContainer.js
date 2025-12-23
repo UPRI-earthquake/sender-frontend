@@ -340,9 +340,9 @@ function DeviceHealthContainer() {
     <div className={styles.deviceHealth}>
       <div className={styles.panelHeader}>
         <div>
-          <p className={styles.kicker}>Health</p>
-          <h2 className={styles.title}>Device health checks</h2>
-          <p className={styles.subtitle}>Connectivity and clock alignment checks against EarthquakeHub plus each configured ringserver.</p>
+          <p className={styles.kicker}>HEALTH</p>
+          <h2 className={styles.title}>Connectivity Checks</h2>
+          <p className={styles.subtitle}>Network path and clock alignment checks against EarthquakeHub and configured ringservers.</p>
         </div>
         <div className={styles.headerActions}>
           <button

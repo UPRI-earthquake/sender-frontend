@@ -9,26 +9,28 @@ import SystemStatusContainer from './components/containers/SystemStatusContainer
 import DeviceHealthContainer from './components/containers/DeviceHealthContainer';
 
 function App() {
-  const [refreshFlag, setRefreshFlag] = useState(false) // if true, refresh contents of the container
+  const [refreshFlag, setRefreshFlag] = useState(false); // if true, refresh contents of the container
+  const [activeTab, setActiveTab] = useState('linking');
+
+  const linkingView = (
+    <Body
+      layout="linking"
+      left={<DeviceInfoContainer setRefreshFlag={setRefreshFlag} />}
+      right={<ServersInfoContainer refreshFlag={refreshFlag} />}
+    />
+  );
+
+  const monitoringView = (
+    <Body
+      left={<SystemStatusContainer />}
+      right={<DeviceHealthContainer />}
+    />
+  );
 
   return (
     <>
-      <Header />
-      <Body
-        left={(
-          <>
-            {/* PR note: Workflow left column keeps device + server setup ordered for operators */}
-            <DeviceInfoContainer setRefreshFlag={setRefreshFlag}/>
-            <ServersInfoContainer refreshFlag={refreshFlag}/>
-          </>
-        )}
-        right={(
-          <>
-            <SystemStatusContainer />
-            <DeviceHealthContainer />
-          </>
-        )}
-      />
+      <Header activeTab={activeTab} onSelectTab={setActiveTab} />
+      {activeTab === 'linking' ? linkingView : monitoringView}
     </>
   );
 }

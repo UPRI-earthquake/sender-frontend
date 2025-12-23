@@ -14,11 +14,12 @@
   align-items: center;
   min-width: 280px;
   max-width: 520px;
-  padding: 12px 18px;
+  padding: 12px 14px 12px 18px;
   border-radius: 12px;
   background-color: #0f172a;
   color: #fff;
   box-shadow: var(--shadow);
+  gap: 10px;
 }
 
 .toast p {
@@ -32,4 +33,34 @@
 
 .toast.success {
   background-color: #10b981;
+}
+
+.toastMessage {
+  flex: 1;
+}
+
+.closeButton {
+  border: none;
+  background: rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+.closeButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
 }

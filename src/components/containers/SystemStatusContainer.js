@@ -26,6 +26,39 @@ const clampPercent = (value) => {
   return value;
 };
 
+const formatDuration = (seconds) => {
+  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) {
+    return null;
+  }
+  const abs = Math.max(0, Math.round(Math.abs(seconds)));
+  const units = [
+    { label: 'd', value: 86400 },
+    { label: 'h', value: 3600 },
+    { label: 'm', value: 60 },
+  ];
+  const parts = [];
+  let remainder = abs;
+
+  for (const unit of units) {
+    if (remainder >= unit.value) {
+      const count = Math.floor(remainder / unit.value);
+      parts.push(`${count}${unit.label}`);
+      remainder -= count * unit.value;
+    }
+    if (parts.length === 2) break;
+  }
+
+  if (parts.length < 2 && remainder > 0) {
+    parts.push(`${remainder}s`);
+  }
+
+  if (parts.length === 0) {
+    return '0s';
+  }
+
+  return parts.join(' ');
+};
+
 const formatPercentLabel = (value, digits = 0) => {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return '—';
@@ -65,29 +98,108 @@ function SystemStatusContainer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [tokenStatus, setTokenStatus] = useState({ state: 'missing' });
+  const [refreshTokenStatus, setRefreshTokenStatus] = useState({ state: 'missing' });
+  const [refreshingToken, setRefreshingToken] = useState(false);
+  const [deviceLinked, setDeviceLinked] = useState(false);
+  const [diskRefreshing, setDiskRefreshing] = useState(false);
+  const [cpuRefreshing, setCpuRefreshing] = useState(false);
 
-  const fetchResources = async () => {
+  const fetchSystemState = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${backendHost}/health/resources`);
-      const payload = response.data.payload || {};
-      setResources({
-        disk: payload.disk || null,
-        cpu: payload.cpu || null,
-      });
+      const [resourcesResult, deviceResult] = await Promise.allSettled([
+        axios.get(`${backendHost}/health/resources`),
+        axios.get(`${backendHost}/device/info`),
+      ]);
+
+      if (resourcesResult.status === 'fulfilled') {
+        const payload = resourcesResult.value.data.payload || {};
+        setResources({
+          disk: payload.disk || null,
+          cpu: payload.cpu || null,
+        });
+      } else {
+        setResources({ disk: null, cpu: null });
+        setError('Unable to load system stats');
+      }
+
+      if (deviceResult.status === 'fulfilled') {
+        const payload = deviceResult.value.data.payload || {};
+        setTokenStatus(payload.tokenStatus || { state: 'missing' });
+        setRefreshTokenStatus(payload.refreshTokenStatus || { state: 'missing' });
+        setDeviceLinked(Boolean(payload.linked));
+      } else {
+        setTokenStatus({ state: 'unknown', reason: 'Token status unavailable' });
+        setRefreshTokenStatus({ state: 'unknown' });
+        setDeviceLinked(false);
+      }
+
       setLastUpdated(Date.now());
     } catch (err) {
       console.log('Resource health error: ', err);
       setError('Unable to load system stats');
     } finally {
       setLoading(false);
+      setDiskRefreshing(false);
+      setCpuRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchResources();
+    fetchSystemState();
   }, [backendHost]);
+
+  const handleManualTokenRefresh = async () => {
+    setRefreshingToken(true);
+    setTokenStatus((prev) => ({ ...prev, state: 'refreshing' }));
+    try {
+      await axios.post(`${backendHost}/device/refresh-token`);
+      await fetchSystemState();
+    } catch (error) {
+      console.log('Token refresh error: ', error);
+      await fetchSystemState();
+    } finally {
+      setRefreshingToken(false);
+    }
+  };
+
+  const handleRefreshDisk = async () => {
+    setDiskRefreshing(true);
+    try {
+      const response = await axios.get(`${backendHost}/health/resources`);
+      const payload = response.data.payload || {};
+      setResources((prev) => ({
+        ...prev,
+        disk: payload.disk || null,
+      }));
+      setLastUpdated(Date.now());
+    } catch (err) {
+      console.log('Disk refresh error: ', err);
+      setError('Unable to load disk stats');
+    } finally {
+      setDiskRefreshing(false);
+    }
+  };
+
+  const handleRefreshCpu = async () => {
+    setCpuRefreshing(true);
+    try {
+      const response = await axios.get(`${backendHost}/health/resources`);
+      const payload = response.data.payload || {};
+      setResources((prev) => ({
+        ...prev,
+        cpu: payload.cpu || null,
+      }));
+      setLastUpdated(Date.now());
+    } catch (err) {
+      console.log('CPU refresh error: ', err);
+      setError('Unable to load CPU stats');
+    } finally {
+      setCpuRefreshing(false);
+    }
+  };
 
   const diskPercentValue = clampPercent(resources.disk?.usedPercent);
   const cpuPercentValue = clampPercent(resources.cpu?.usagePercent);
@@ -103,30 +215,201 @@ function SystemStatusContainer() {
   const cpuStatus = classifyUsage(resources.cpu?.usagePercent);
   const subtitle = error
     ? 'Unable to read device stats. Please refresh.'
-    : 'Live snapshot of disk and CPU usage on this device.';
+    : 'Resources and authorization needed for this sender to run.';
+  const tokenStatusDetails = useMemo(() => {
+    const state = tokenStatus?.state;
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const secondsToExpiry = typeof tokenStatus?.secondsToExpiry === 'number'
+      ? tokenStatus.secondsToExpiry
+      : null;
+    const expiresAt = typeof tokenStatus?.expiresAt === 'number' ? tokenStatus.expiresAt : null;
+    const remainingSeconds = secondsToExpiry !== null
+      ? secondsToExpiry
+      : (expiresAt !== null ? expiresAt - nowSeconds : null);
+    const reason = tokenStatus?.reason;
+
+    const formattedRemaining = remainingSeconds !== null ? formatDuration(remainingSeconds) : null;
+    const expiredAgo = remainingSeconds !== null && remainingSeconds < 0
+      ? formatDuration(Math.abs(remainingSeconds))
+      : null;
+
+    const expiryLabel = () => {
+      if (formattedRemaining && remainingSeconds >= 0) {
+        return `Expires in ${formattedRemaining}`;
+      }
+      if (expiredAgo) {
+        return `Expired ${expiredAgo} ago`;
+      }
+      return 'Expiry time unknown';
+    };
+
+    switch (state) {
+      case 'valid':
+        return {
+          headline: tokenStatus?.expiringSoon ? 'Token expiring soon' : 'Token healthy',
+          helper: expiryLabel(),
+          tone: tokenStatus?.expiringSoon ? 'warn' : 'success',
+          badgeLabel: tokenStatus?.expiringSoon ? 'Token expiring soon' : 'Token healthy',
+          allowRefresh: Boolean(tokenStatus?.expiringSoon),
+        };
+      case 'refreshing':
+        return {
+          headline: 'Token refreshing',
+          helper: 'Awaiting new credentials',
+          tone: 'warn',
+          badgeLabel: 'Refreshing',
+          allowRefresh: false,
+        };
+      case 'expired':
+        return {
+          headline: 'Token expired',
+          helper: expiryLabel(),
+          tone: 'danger',
+          badgeLabel: 'Token expired',
+          allowRefresh: true,
+        };
+      case 'corrupted':
+        return {
+          headline: 'Token file corrupted',
+          helper: reason || 'Regenerate credentials to continue streaming.',
+          tone: 'danger',
+          badgeLabel: 'Token issue',
+          allowRefresh: true,
+        };
+      case 'invalid':
+        return {
+          headline: 'Token invalid',
+          helper: reason || 'Regenerate credentials to continue streaming.',
+          tone: 'danger',
+          badgeLabel: 'Token invalid',
+          allowRefresh: true,
+        };
+      case 'missing':
+        return {
+          headline: 'No token found',
+          helper: 'Link device to fetch credentials.',
+          tone: 'warn',
+          badgeLabel: 'No token',
+          allowRefresh: false,
+        };
+      default:
+        return {
+          headline: 'Token status unknown',
+          helper: reason || 'Refresh to load token status.',
+          tone: 'muted',
+          badgeLabel: 'Unknown',
+          allowRefresh: true,
+        };
+    }
+  }, [tokenStatus]);
+
+  const relinkNotice = useMemo(() => {
+    const refreshState = refreshTokenStatus?.state;
+    const needsRelinkStates = ['invalid', 'expired', 'corrupted'];
+    const needsRelink = needsRelinkStates.includes(refreshState) || (refreshState === 'missing' && deviceLinked);
+    if (!needsRelink) {
+      return { required: false, helper: '' };
+    }
+    const reason = refreshTokenStatus?.reason ? String(refreshTokenStatus.reason).trim() : '';
+    const reasonPrefix = reason ? `${reason}${reason.endsWith('.') ? ' ' : '. '}` : '';
+    return {
+      required: true,
+      helper: `${reasonPrefix}Unlink and relink this device to generate new credentials.`,
+    };
+  }, [refreshTokenStatus, deviceLinked]);
+
+  const tokenRefreshDisabled = refreshingToken
+    || !tokenStatusDetails.allowRefresh
+    || relinkNotice.required;
   const lastUpdatedText = formatTimestamp(lastUpdated);
 
   return (
     <div className={styles.systemStatus}>
       <div className={styles.panelHeader}>
         <div>
-          <p className={styles.kicker}>System</p>
-          <h2 className={styles.title}>System status</h2>
+          <p className={styles.kicker}>SYSTEM</p>
+          <h2 className={styles.title}>Operational Status</h2>
           <p className={styles.subtitle}>{subtitle}</p>
         </div>
-        <button
-          className={styles.refreshButton}
-          onClick={fetchResources}
-          disabled={loading}
-        >
-          {loading ? 'Refreshing…' : 'Refresh'}
-        </button>
+      </div>
+
+      <div className={styles.authCard}>
+        <div className={styles.authTopRow}>
+          <div>
+            <p className={styles.sectionLabel}>Authorization</p>
+            <p className={`${styles.tokenHeadline} ${styles[`tone-${tokenStatusDetails.tone}`] || ''}`}>
+              {tokenStatusDetails.headline}
+            </p>
+            <p className={styles.tokenHelper}>{tokenStatusDetails.helper}</p>
+          </div>
+          <button
+            className={styles.secondaryButton}
+            onClick={handleManualTokenRefresh}
+            disabled={tokenRefreshDisabled}
+          >
+            {refreshingToken ? 'Refreshing…' : 'Refresh token'}
+          </button>
+        </div>
+        <div className={styles.authActionsRow}>
+          {relinkNotice.required && (
+            <p className={styles.relinkNotice}>{relinkNotice.helper}</p>
+          )}
+        </div>
       </div>
 
       <div className={styles.metricsGrid}>
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
             <p className={styles.metricLabel}>Disk usage</p>
+            <button
+              type="button"
+              className={`${styles.iconButton} ${diskRefreshing ? styles.iconButtonRefreshing : ''}`}
+              onClick={handleRefreshDisk}
+              disabled={diskRefreshing}
+              title="Refresh disk usage"
+              aria-label="Refresh disk usage"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <polyline
+                  points="23 4 23 10 17 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <polyline
+                  points="1 20 1 14 7 14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
           </div>
           <div className={styles.metricBody}>
             <div
@@ -152,6 +435,55 @@ function SystemStatusContainer() {
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
             <p className={styles.metricLabel}>CPU usage</p>
+            <button
+              type="button"
+              className={`${styles.iconButton} ${cpuRefreshing ? styles.iconButtonRefreshing : ''}`}
+              onClick={handleRefreshCpu}
+              disabled={cpuRefreshing}
+              title="Refresh CPU usage"
+              aria-label="Refresh CPU usage"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <polyline
+                  points="23 4 23 10 17 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <polyline
+                  points="1 20 1 14 7 14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
           </div>
           <div className={styles.metricBody}>
             <div
