@@ -46,6 +46,17 @@ function DeviceLinkModal(props) {
  const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('error')
 
+  const sanitizeMessage = (message) => {
+    if (!message) return '';
+    let sanitized = message;
+    if (inputPassword) {
+      const escaped = inputPassword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(escaped, 'g');
+      sanitized = sanitized.replace(pattern, '******');
+    }
+    return sanitized;
+  };
+
 	//HANDLE LINK FORM SUBMIT
 	const handleDeviceLink = async (event) => {
 		event.preventDefault();
@@ -110,16 +121,37 @@ function DeviceLinkModal(props) {
       
 		} catch (error) {
 			console.log(error);
-			let errorSummary = "";
+			const status = error?.response?.status;
+      const hubMessage = error?.response?.data?.message || '';
+			const validationErrors = error?.response?.data?.validationErrors;
+			let errorSummary = '';
 
 			if (error.code === "ERR_NETWORK") {
-				errorSummary += error.message;
-			} else if (error.response.data.validationErrors) {
-				error.response.data.validationErrors.forEach(error => {
-					errorSummary += error.msg + ", \n";
-				});
-			} else if (error.response.data.message) {
-				errorSummary += error.response.data.message;
+				errorSummary = "Cannot reach Earthquake Hub. Check your network connection.";
+			} else if (status === 401) {
+        errorSummary = "Username or password is incorrect.";
+      } else if (Array.isArray(validationErrors) && validationErrors.length) {
+				errorSummary = validationErrors.map((err) => err.msg).join(", ");
+			} else if (status === 409 && hubMessage) {
+				errorSummary = hubMessage;
+			} else if (
+        status === 403 ||
+        /unauthorized|forbidden|permission/i.test(hubMessage)
+      ) {
+				errorSummary = "Account is not allowed to link this device. Use an institution/operations account (not a barangay account) or request linking access.";
+			} else if (status >= 500 || /server error/i.test(hubMessage)) {
+				errorSummary = "Earthquake Hub returned a server error while linking. If this is a barangay account, it cannot be linked; otherwise try again or contact support.";
+			} else if (hubMessage) {
+        // Avoid surfacing outdated or policy-driven password messages
+        if (/password.*6\s?and\s?30/i.test(hubMessage)) {
+          errorSummary = "Username or password is incorrect.";
+        } else {
+          errorSummary = hubMessage;
+        }
+			} else if (status === 400) {
+        errorSummary = "Linking failed. Verify username/password and that the account has sensor access (citizen/sensor accounts only).";
+      } else {
+				errorSummary = "Linking failed. Verify credentials and try again.";
 			}
 
       // remove loading screen after timeout
@@ -127,10 +159,10 @@ function DeviceLinkModal(props) {
         setLoadingScreen(false);
         // Set Toast Content
         setToastType('error');
-        setToastMessage(`Device Linking Error: ${errorSummary}`);
+      setToastMessage(`Device Linking Error: ${sanitizeMessage(errorSummary)}`);
       }, 1000);
-		}
-	}
+    }
+  }
 
   const handleModalClose = (event) => {
     event.preventDefault();
