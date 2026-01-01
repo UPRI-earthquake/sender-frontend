@@ -69,6 +69,27 @@
   margin-top: 1rem;
   background: var(--input-bg);
   color: var(--text-primary);
+  transition: background 120ms ease, border-color 120ms ease, outline-color 120ms ease;
+}
+
+.modal select:focus {
+  outline: 2px solid var(--input-border-strong);
+  background: var(--surface);
+}
+
+.modal select option {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.modal select option:checked {
+  background: color-mix(in srgb, var(--primary) 28%, var(--surface));
+  color: var(--text-primary);
+}
+
+.modal select option:disabled {
+  color: var(--muted);
+  background: var(--surface-strong);
 }
 
 .inputFieldStatic {
