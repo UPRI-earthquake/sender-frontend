@@ -7,6 +7,7 @@ import DeviceInfoContainer from './components/containers/DeviceInfoContainer';
 import ServersInfoContainer from './components/containers/ServersInfoContainer';
 import SystemStatusContainer from './components/containers/SystemStatusContainer';
 import DeviceHealthContainer from './components/containers/DeviceHealthContainer';
+import RecoveryContainer from './components/containers/RecoveryContainer';
 
 function App() {
   const [refreshFlag, setRefreshFlag] = useState(false); // if true, refresh contents of the container
@@ -23,7 +24,12 @@ function App() {
   const monitoringView = (
     <Body
       left={<SystemStatusContainer />}
-      right={<DeviceHealthContainer />}
+      right={(
+        <>
+          <RecoveryContainer />
+          <DeviceHealthContainer />
+        </>
+      )}
     />
   );
 

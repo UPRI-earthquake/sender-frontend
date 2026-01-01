@@ -21,6 +21,7 @@ function DeviceInfoContainer(props) {
   const [latitude, setLatitude] = useState('Not Set');
   const [elevation, setElevation] = useState('Not Set');
   const [status, setStatus] = useState('Not Linked');
+  const [linkState, setLinkState] = useState('unknown');
   const [prefillLocation, setPrefillLocation] = useState({ longitude: '', latitude: '', elevation: '' });
   const [refreshingMetadata, setRefreshingMetadata] = useState(false);
 
@@ -58,7 +59,11 @@ function DeviceInfoContainer(props) {
       setLongitude(formatDisplayValue(mergedLongitude, '°'));
       setLatitude(formatDisplayValue(mergedLatitude, '°'));
       setElevation(formatDisplayValue(mergedElevation, 'm'));
-      setStatus(deviceInfo.linked ? "Linked" : "Not Linked");
+      setLinkState(deviceInfo.linkState || 'unknown');
+      const nextStatus = deviceInfo.linked
+        ? 'Linked'
+        : (deviceInfo.linkState === 'unlinked' ? 'Unlinked' : 'Not Linked');
+      setStatus(nextStatus);
       setLinkButton(Boolean(deviceInfo.linked)); // disabled when linked
       setUnlinkButton(!deviceInfo.linked); // enabled when linked
 
@@ -100,6 +105,7 @@ function DeviceInfoContainer(props) {
       setToastMessage('');
     }, 5000);
   }
+
 
   const handleRefreshHostMetadata = async () => {
     setRefreshingMetadata(true);
@@ -145,8 +151,6 @@ function DeviceInfoContainer(props) {
     { label: 'Elevation', value: elevation },
   ];
 
-  const isLinked = status === 'Linked';
-
   //MODAL STATES
   const [showDeviceLinkModal, setDeviceLinkModalShow] = useState(false);
   const [showDeviceUnlinkModal, setDeviceUnlinkModalShow] = useState(false);
@@ -164,7 +168,13 @@ function DeviceInfoContainer(props) {
           <h2 className={styles.title}>Device Information</h2>
         </div>
         <div className={styles.badgeStack}>
-          <span className={`${styles.statusPill} ${pillTone(status === 'Linked' ? 'success' : 'warn')}`}>{status}</span>
+          <span className={`${styles.statusPill} ${
+            status === 'Linked'
+              ? pillTone('success')
+              : status === 'Unlinked'
+                ? pillTone('muted')
+                : pillTone('warn')
+          }`}>{status}</span>
         </div>
       </div>
 

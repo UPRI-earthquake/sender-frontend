@@ -140,6 +140,22 @@ const buildTimeDetails = (timePayload) => {
   return details;
 };
 
+const linkifyText = (text) => {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s)]+)/g;
+  const parts = String(text).split(urlRegex);
+  return parts.map((part, index) => {
+    if (urlRegex.test(part)) {
+      return (
+        <a key={`link-${index}`} href={part} target="_blank" rel="noreferrer" className={styles.inlineLink}>
+          {part}
+        </a>
+      );
+    }
+    return <span key={`text-${index}`}>{part}</span>;
+  });
+};
+
 function DeviceHealthContainer() {
   const backendHost = useMemo(() => (
     process.env.NODE_ENV === 'production'
@@ -158,6 +174,7 @@ function DeviceHealthContainer() {
   const [expandedDetails, setExpandedDetails] = useState({});
   const [truncatedDetails, setTruncatedDetails] = useState({});
   const detailRefs = useRef({});
+  const [openSummary, setOpenSummary] = useState({});
 
   const registerDetailRef = (key, field) => (el) => {
     if (!detailRefs.current[key]) {
@@ -336,6 +353,53 @@ function DeviceHealthContainer() {
     })
   );
 
+  const renderSummary = (summaryText, summaryKey) => {
+    const text = summaryText || '';
+    const shouldClamp = text.length > 140;
+    const isOpen = Boolean(openSummary[summaryKey]);
+    return (
+      <div className={styles.summaryRow} key={`${summaryKey}-summary`}>
+        <p
+          className={`${styles.checkSummary} ${shouldClamp ? styles.clampedSummary : ''}`}
+          title={!shouldClamp ? text : undefined}
+        >
+          {linkifyText(text)}
+        </p>
+        {shouldClamp && (
+          <div className={styles.infoTooltip}>
+            <button
+              type="button"
+              className={styles.infoButton}
+              aria-label="Show full summary"
+              aria-expanded={isOpen}
+              onClick={() => setOpenSummary((prev) => ({
+                ...prev,
+                [summaryKey]: !prev[summaryKey],
+              }))}
+            >
+              <svg
+                className={styles.infoButtonIcon}
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 10.5v6" />
+                <circle cx="12" cy="7.25" r="0.85" fill="currentColor" />
+              </svg>
+            </button>
+            <div className={`${styles.tooltipBubble} ${isOpen ? styles.tooltipBubbleVisible : ''}`}>
+              {linkifyText(text)}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={styles.deviceHealth}>
       <div className={styles.panelHeader}>
@@ -367,7 +431,7 @@ function DeviceHealthContainer() {
             <div className={styles.checkHeader}>
               <div className={styles.checkHeaderBody}>
                 <p className={styles.sectionLabel}>Network path</p>
-                <p className={styles.checkSummary} title={networkStatus.helper || ''}>{networkStatus.helper}</p>
+                {renderSummary(networkStatus.helper || '', 'network')}
               </div>
               <span
                 className={`${styles.statusPill} ${pillTone(networkStatus.tone)}`}
@@ -387,7 +451,7 @@ function DeviceHealthContainer() {
             <div className={styles.checkHeader}>
               <div className={styles.checkHeaderBody}>
                 <p className={styles.sectionLabel}>Clock sync</p>
-                <p className={styles.checkSummary} title={timeStatus.helper || ''}>{timeStatus.helper}</p>
+                {renderSummary(timeStatus.helper || '', 'time')}
               </div>
               <span
                 className={`${styles.statusPill} ${pillTone(timeStatus.tone)}`}

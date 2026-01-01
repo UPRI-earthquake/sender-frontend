@@ -28,6 +28,8 @@ function ServersInfoContainer({ refreshFlag }) {
   const [truncatedLogs, setTruncatedLogs] = useState({});
   const logTextRefs = useRef({});
   const [serverPendingRemoval, setServerPendingRemoval] = useState(null);
+  const [linked, setLinked] = useState(false);
+  const [linkState, setLinkState] = useState('unknown');
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
@@ -47,8 +49,11 @@ function ServersInfoContainer({ refreshFlag }) {
       const backend_host = process.env.NODE_ENV === 'production'
         ? `${window.location.origin}/api`
         : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
-      const response = await axios.get(`${backend_host}/stream/status`);
-      const serversData = response.data.payload;
+      const [serversResp, deviceResp] = await Promise.all([
+        axios.get(`${backend_host}/stream/status`),
+        axios.get(`${backend_host}/device/info`),
+      ]);
+      const serversData = serversResp.data.payload;
       const serversList = Object.keys(serversData).map((url) => {
         const serverEntry = serversData[url] || {};
         const logPayload = serverEntry.logs || serverEntry.recentLogs || serverEntry.lastErrors || [];
@@ -63,6 +68,9 @@ function ServersInfoContainer({ refreshFlag }) {
       setServers(serversList);
       setLastUpdated(Date.now());
       setPollDelay(BASE_POLL_MS);
+      const devicePayload = deviceResp?.data?.payload || {};
+      setLinked(Boolean(devicePayload.linked));
+      setLinkState(devicePayload.linkState || 'unknown');
     } catch (error) {
       console.log('Error fetching servers:', error);
       setPollDelay((prev) => Math.min(prev * 2, MAX_POLL_MS));
@@ -189,6 +197,10 @@ function ServersInfoContainer({ refreshFlag }) {
     .map((server) => server.institutionName || server.url)
     .filter(Boolean)
     .join(', ');
+  const addDisabled = !linked;
+  const addTitle = addDisabled
+    ? (linkState === 'unlinked' ? 'Relink device before adding servers' : 'Link device before adding servers')
+    : 'Add a new server';
 
   return (
     <div className={styles.serversInfo}>
@@ -205,6 +217,8 @@ function ServersInfoContainer({ refreshFlag }) {
           <button
             className={styles.primaryButton}
             onClick={() => setAddServerModalShow(true)}
+            disabled={addDisabled}
+            title={addTitle}
           >Add server</button>
         </div>
       </div>

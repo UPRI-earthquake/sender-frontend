@@ -1,0 +1,131 @@
+.recoveryPanel {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.kicker {
+  margin: 0;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.title {
+  margin: 4px 0 6px;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.badgeStack {
+  display: flex;
+  gap: 8px;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--pill-muted-border);
+  background: var(--pill-muted-bg);
+  color: var(--pill-muted-text);
+  white-space: nowrap;
+}
+
+.pillSuccess {
+  background: var(--pill-success-bg);
+  color: var(--pill-success-text);
+  border-color: var(--pill-success-border);
+}
+
+.pillWarn {
+  background: var(--pill-warn-bg);
+  color: var(--pill-warn-text);
+  border-color: var(--pill-warn-border);
+}
+
+.pillMuted {
+  background: var(--pill-muted-bg);
+  color: var(--pill-muted-text);
+  border-color: var(--pill-muted-border);
+}
+
+.panelBody {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.copyBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.helper {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.resetButton {
+  border: 1px solid var(--pill-danger-border);
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--pill-danger-text);
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 11px 14px;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+.resetButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+}
+
+.resetButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .panelHeader {
+    flex-direction: column;
+  }
+}
