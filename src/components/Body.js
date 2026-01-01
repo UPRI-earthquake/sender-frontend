@@ -13,7 +13,7 @@ function Body({ left, right, children, layout = 'weighted' }) {
   })();
 
   return (
-    <div className={`${styles.body} ${layoutClass}`}>
+    <div className={`${styles.body} ${layoutClass}`} id="main">
       {columns.map((content, index) => (
         <div key={index} className={styles.columnStack}>
           {content}

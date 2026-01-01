@@ -26,7 +26,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-size: 12px;
-  color: #0ea5e9;
+  color: var(--primary);
   font-weight: 700;
 }
 
@@ -67,20 +67,20 @@
 }
 
 .refreshButton {
-  background: #ffffff;
-  color: #0f172a;
+  background: var(--surface);
+  color: var(--text-primary);
   border: 1px dashed var(--border);
 }
 
 .ghostButton {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--surface-muted);
+  color: var(--text-primary);
   border: 1px solid var(--border);
 }
 
 .actionButton {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--surface-muted);
+  color: var(--text-primary);
   border: 1px solid var(--border);
   padding: 10px 12px;
   font-size: 14px;
@@ -108,8 +108,8 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 14px;
-  background: #fef2f2;
-  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: var(--pill-danger-bg);
+  border: 1px solid var(--pill-danger-border);
   border-radius: var(--radius-md);
   padding: 12px 14px;
 }
@@ -118,19 +118,19 @@
   margin: 0;
   font-size: 16px;
   font-weight: 800;
-  color: #b91c1c;
+  color: var(--pill-danger-text);
 }
 
 .errorList {
   margin: 4px 0 0;
-  color: rgba(185, 28, 28, 0.8);
+  color: color-mix(in srgb, var(--pill-danger-text) 86%, var(--text-primary));
   font-weight: 600;
   font-size: 13px;
 }
 
 .errorMessage {
   margin: 4px 0 0;
-  color: #b91c1c;
+  color: var(--pill-danger-text);
 }
 
 .errorActions {
@@ -143,7 +143,7 @@
 .errorDetails {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: #ffffff;
+  background: var(--surface);
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -295,7 +295,7 @@
   width: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: #ffffff;
+  background: var(--surface);
   overflow: hidden;
 }
 
@@ -315,7 +315,7 @@
   padding: 14px;
   border-bottom: 1px solid var(--border);
   font-weight: 700;
-  background: #f8fafc;
+  background: var(--table-header);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -349,7 +349,7 @@
 }
 
 .serversTable tbody tr:hover {
-  background: #f9fafb;
+  background: var(--table-hover);
 }
 
 .cellLabel {
@@ -407,45 +407,45 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  border: 1px solid var(--border);
-  background: #f8fafc;
+  border: 1px solid var(--pill-muted-border);
+  background: var(--pill-muted-bg);
 }
 
 .statusSuccess {
-  background: #ecfdf3;
-  color: #166534;
-  border-color: rgba(22, 101, 52, 0.2);
+  background: var(--pill-success-bg);
+  color: var(--pill-success-text);
+  border-color: var(--pill-success-border);
 }
 
 .statusWarn {
-  background: #fff7ed;
-  color: #9a3412;
-  border-color: rgba(250, 146, 60, 0.3);
+  background: var(--pill-warn-bg);
+  color: var(--pill-warn-text);
+  border-color: var(--pill-warn-border);
 }
 
 .statusDanger {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: rgba(248, 113, 113, 0.35);
+  background: var(--pill-danger-bg);
+  color: var(--pill-danger-text);
+  border-color: var(--pill-danger-border);
 }
 
 .statusMuted {
-  background: #f4f4f5;
-  color: #52525b;
-  border-color: rgba(82, 82, 91, 0.25);
+  background: var(--pill-muted-bg);
+  color: var(--pill-muted-text);
+  border-color: var(--pill-muted-border);
 }
 
 .errorRow {
-  background: #fff1f2;
-  box-shadow: inset 3px 0 0 #ef4444;
+  background: color-mix(in srgb, var(--pill-danger-bg) 90%, var(--surface));
+  box-shadow: inset 3px 0 0 var(--danger);
 }
 
 .errorRow:hover {
-  background: #ffe4e6;
+  background: color-mix(in srgb, var(--pill-danger-bg) 100%, var(--surface));
 }
 
 .errorRow td {
-  border-bottom-color: rgba(248, 113, 113, 0.35);
+  border-bottom-color: var(--pill-danger-border);
 }
 
 .panelFooter {

@@ -1,7 +1,7 @@
 .body {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 22px 48px;
+  padding: calc(var(--header-offset, var(--header-h)) + 24px) 22px 48px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 28px;
