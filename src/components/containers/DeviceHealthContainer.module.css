@@ -127,6 +127,12 @@
   min-width: 220px;
 }
 
+.checkHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .checkSummary {
   margin: 6px 0 0;
   color: var(--text-primary);
@@ -165,6 +171,12 @@
   align-items: center;
   justify-content: center;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.infoButtonActive {
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 8px 16px rgba(14, 165, 233, 0.18);
 }
 
 .tooltipBubble {
@@ -256,6 +268,12 @@
 
 .helperText {
   margin: 0;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.recommendation {
+  margin: 0 0 6px;
   color: var(--text-primary);
   font-weight: 700;
 }

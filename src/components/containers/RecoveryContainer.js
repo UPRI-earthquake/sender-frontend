@@ -55,7 +55,7 @@ function RecoveryContainer() {
     setTimeout(() => setToastMessage(''), 5000);
   };
 
-  const isDisabled = resetting || loading || !linked;
+  const isDisabled = resetting || loading || !(linked || linkState === 'unlinked');
   const linkedLabel = linked ? 'Linked' : (linkState === 'unlinked' ? 'Unlinked' : 'Not linked');
   const linkedTone = linked
     ? styles.pillSuccess
@@ -70,6 +70,7 @@ function RecoveryContainer() {
           onModalClose={() => setShowResetModal(false)}
           onResettingChange={handleResettingChange}
           onResetSuccess={handleResetSuccess}
+          linkState={linkState}
         />
       )}
 
@@ -78,7 +79,7 @@ function RecoveryContainer() {
           <p className={styles.kicker}>RECOVERY</p>
           <h2 className={styles.title}>Reset</h2>
           <p className={styles.subtitle}>
-            Use only if device linking is stuck or for linking to another account.
+            Use only to remove this device's association with the current account.
           </p>
         </div>
         <div className={styles.badgeStack}>

@@ -170,11 +170,10 @@ function DeviceHealthContainer() {
     error: null,
     lastRun: null,
   });
-  const [showDetails, setShowDetails] = useState(false);
   const [expandedDetails, setExpandedDetails] = useState({});
   const [truncatedDetails, setTruncatedDetails] = useState({});
   const detailRefs = useRef({});
-  const [openSummary, setOpenSummary] = useState({});
+  const [expandedChecks, setExpandedChecks] = useState({ network: false, time: false });
 
   const registerDetailRef = (key, field) => (el) => {
     if (!detailRefs.current[key]) {
@@ -198,7 +197,8 @@ function DeviceHealthContainer() {
   };
 
   useEffect(() => {
-    if (!showDetails) {
+    const anyOpen = Object.values(expandedChecks || {}).some(Boolean);
+    if (!anyOpen) {
       setTruncatedDetails({});
       return undefined;
     }
@@ -222,7 +222,7 @@ function DeviceHealthContainer() {
     return () => {
       window.removeEventListener('resize', measure);
     };
-  }, [health, showDetails]);
+  }, [health, expandedChecks]);
 
   const runHealthChecks = async () => {
     setHealth((prev) => ({ ...prev, checking: true, error: null }));
@@ -240,7 +240,9 @@ function DeviceHealthContainer() {
         error: null,
         lastRun: Date.now(),
       });
-      setShowDetails(false);
+      setExpandedChecks({ network: false, time: false });
+      setExpandedDetails({});
+      setTruncatedDetails({});
     } catch (error) {
       console.log("Health check error: ", error);
       setHealth({
@@ -250,7 +252,9 @@ function DeviceHealthContainer() {
         error: 'Health check failed. See console for details.',
         lastRun: Date.now(),
       });
-      setShowDetails(false);
+      setExpandedChecks({ network: false, time: false });
+      setExpandedDetails({});
+      setTruncatedDetails({});
     }
   };
 
@@ -279,6 +283,22 @@ function DeviceHealthContainer() {
           : `Check connectivity from this device to ${targetHost}.`,
   };
 
+  const networkSummary = !health.network
+    ? 'Waiting for first network check.'
+    : networkOk
+      ? ringserverResults.length
+        ? `Reachable; ${ringserverResults.length} ringserver${ringserverResults.length > 1 ? 's' : ''} responding.`
+        : 'Reachable.'
+      : failingRingserver
+        ? `Cannot reach ${formatRingserverLabel(failingRingserver)}.`
+        : `Cannot reach ${targetHost}.`;
+
+  const networkAction = networkOk
+    ? ''
+    : failingRingserver
+      ? 'Verify internet access and that the listed ringserver is online. Restart the sender if it stays offline.'
+      : "Check this device's internet connection and DNS. Allow outbound HTTPS to Earthquake Hub.";
+
   const offsetMs = typeof health.time?.offsetMs === 'number' ? health.time.offsetMs : null;
   const clockOk = typeof offsetMs === 'number' && Math.abs(offsetMs) <= 1500;
   const ntpFixSteps = 'NTP blocked or misconfigured; SSH into the Raspberry Shake, edit /etc/ntp.conf to add "server 0.asia.pool.ntp.org" (per https://upri-earthquake.github.io/issues/rshake-ntp-issue.html), then restart the device.';
@@ -294,6 +314,16 @@ function DeviceHealthContainer() {
           ? `Offset ${formatOffset(offsetMs)} vs ${targetHost}. ${ntpFixSteps}`
           : `NTP blocked or unreachable; ${ntpFixSteps}`,
   };
+
+  const timeSummary = !health.time
+    ? 'Waiting for first time check.'
+    : clockOk
+      ? `Offset ${formatOffset(offsetMs)} vs ${targetHost}.`
+      : `Clock offset ${formatOffset(offsetMs) || 'unknown'} vs ${targetHost}.`;
+
+  const timeAction = clockOk
+    ? ''
+    : 'Ensure NTP can reach the internet, then restart NTP or reboot so the clock can resync.';
 
   const timeDetails = buildTimeDetails(health.time);
   const updatedLabel = formatTimestamp(health.lastRun) || 'Not run yet';
@@ -353,29 +383,42 @@ function DeviceHealthContainer() {
     })
   );
 
-  const renderSummary = (summaryText, summaryKey) => {
-    const text = summaryText || '';
-    const shouldClamp = text.length > 140;
-    const isOpen = Boolean(openSummary[summaryKey]);
+  const toggleCheckDetails = (key) => {
+    setExpandedChecks((prev) => ({
+      network: key === 'network' ? !prev.network : false,
+      time: key === 'time' ? !prev.time : false,
+    }));
+  };
+
+  const renderCheckCard = ({
+    key,
+    label,
+    summary,
+    status,
+    details,
+    action,
+  }) => {
+    const expanded = Boolean(expandedChecks[key]);
     return (
-      <div className={styles.summaryRow} key={`${summaryKey}-summary`}>
-        <p
-          className={`${styles.checkSummary} ${shouldClamp ? styles.clampedSummary : ''}`}
-          title={!shouldClamp ? text : undefined}
-        >
-          {linkifyText(text)}
-        </p>
-        {shouldClamp && (
-          <div className={styles.infoTooltip}>
+      <div className={styles.checkCard}>
+        <div className={styles.checkHeader}>
+          <div className={styles.checkHeaderBody}>
+            <p className={styles.sectionLabel}>{label}</p>
+            <p className={styles.checkSummary}>{linkifyText(summary || '')}</p>
+          </div>
+          <div className={styles.checkHeaderActions}>
+            <span
+              className={`${styles.statusPill} ${pillTone(status.tone)}`}
+              title={status.label || ''}
+            >
+              {status.label}
+            </span>
             <button
               type="button"
-              className={styles.infoButton}
-              aria-label="Show full summary"
-              aria-expanded={isOpen}
-              onClick={() => setOpenSummary((prev) => ({
-                ...prev,
-                [summaryKey]: !prev[summaryKey],
-              }))}
+              className={`${styles.infoButton} ${expanded ? styles.infoButtonActive : ''}`}
+              aria-label={expanded ? 'Hide details' : 'Show details'}
+              aria-expanded={expanded}
+              onClick={() => toggleCheckDetails(key)}
             >
               <svg
                 className={styles.infoButtonIcon}
@@ -391,10 +434,17 @@ function DeviceHealthContainer() {
                 <circle cx="12" cy="7.25" r="0.85" fill="currentColor" />
               </svg>
             </button>
-            <div className={`${styles.tooltipBubble} ${isOpen ? styles.tooltipBubbleVisible : ''}`}>
-              {linkifyText(text)}
-            </div>
           </div>
+        </div>
+        {expanded && (
+          <>
+            {action && status.tone !== 'success' && (
+              <p className={styles.recommendation}>{action}</p>
+            )}
+            <div className={styles.detailGrid}>
+              {renderDetailItems(details, key)}
+            </div>
+          </>
         )}
       </div>
     );
@@ -427,56 +477,22 @@ function DeviceHealthContainer() {
 
       {hasResults && (
         <div className={styles.checksGrid}>
-          <div className={styles.checkCard}>
-            <div className={styles.checkHeader}>
-              <div className={styles.checkHeaderBody}>
-                <p className={styles.sectionLabel}>Network path</p>
-                {renderSummary(networkStatus.helper || '', 'network')}
-              </div>
-              <span
-                className={`${styles.statusPill} ${pillTone(networkStatus.tone)}`}
-                title={networkStatus.label || ''}
-              >
-                {networkStatus.label}
-              </span>
-            </div>
-            {showDetails && (
-              <div className={styles.detailGrid}>
-                {renderDetailItems(networkDetails, 'network')}
-              </div>
-            )}
-          </div>
-
-          <div className={styles.checkCard}>
-            <div className={styles.checkHeader}>
-              <div className={styles.checkHeaderBody}>
-                <p className={styles.sectionLabel}>Clock sync</p>
-                {renderSummary(timeStatus.helper || '', 'time')}
-              </div>
-              <span
-                className={`${styles.statusPill} ${pillTone(timeStatus.tone)}`}
-                title={timeStatus.label || ''}
-              >
-                {timeStatus.label}
-              </span>
-            </div>
-            {showDetails && (
-              <div className={styles.detailGrid}>
-                {renderDetailItems(timeDetails, 'time')}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {hasResults && (
-        <div className={styles.detailsToggle}>
-          <button
-            className={styles.secondaryButton}
-            onClick={() => setShowDetails((prev) => !prev)}
-          >
-            {showDetails ? 'Hide technical details' : 'Show technical details'}
-          </button>
+          {renderCheckCard({
+            key: 'network',
+            label: 'Network path',
+            summary: networkSummary,
+            status: networkStatus,
+            details: networkDetails,
+            action: networkAction,
+          })}
+          {renderCheckCard({
+            key: 'time',
+            label: 'Clock sync',
+            summary: timeSummary,
+            status: timeStatus,
+            details: timeDetails,
+            action: timeAction,
+          })}
         </div>
       )}
 

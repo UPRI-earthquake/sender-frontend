@@ -36,7 +36,7 @@
   background: transparent;
   color: var(--muted);
   border-radius: 999px;
-  padding: 10px 18px;
+  padding: 10px 16px;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
@@ -46,6 +46,7 @@
   letter-spacing: -0.01em;
   min-width: 0;
   white-space: nowrap;
+  gap: 8px;
 }
 
 .tabButton:hover {
@@ -73,6 +74,12 @@
   margin: 0;
 }
 
+.tabIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .tabButton:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--primary-strong) 60%, transparent);
   outline-offset: 3px;
@@ -95,7 +102,7 @@ html[data-theme='dark'] .active {
 
 @media (max-width: 720px) {
   .navShell {
-    width: 100%;
-    justify-content: flex-start;
+    width: auto;
+    justify-content: flex-end;
   }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import styles from './SystemStatusContainer.module.css';
+import InfoTooltip from '../InfoTooltip';
 
 const formatBytes = (bytes) => {
   if (typeof bytes !== 'number' || Number.isNaN(bytes) || bytes < 0) {
@@ -303,6 +304,27 @@ function SystemStatusContainer() {
     }
   }, [tokenStatus]);
 
+  const refreshLeewaySeconds = useMemo(() => {
+    const raw = Number(window?.ENV?.REFRESH_EXPIRY_LEEWAY_MS || 0);
+    if (!Number.isFinite(raw) || raw <= 0) return 10 * 60; // default 10m
+    return Math.floor(raw / 1000);
+  }, []);
+
+  const formatRefreshEta = (seconds) => {
+    if (seconds === null || seconds === undefined || Number.isNaN(seconds)) return null;
+    if (seconds <= 0) return 'imminent';
+    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    if (hours <= 0) return `${mins}m`;
+    return remMins > 0 ? `${hours}h ${remMins}m` : `${hours}h`;
+  };
+
+  const adjustedSeconds = typeof tokenStatus?.secondsToExpiry === 'number'
+    ? Math.max(0, tokenStatus.secondsToExpiry - refreshLeewaySeconds)
+    : null;
+  const nextRefreshEta = formatRefreshEta(adjustedSeconds);
+
   const relinkNotice = useMemo(() => {
     const refreshState = refreshTokenStatus?.state;
     const needsRelinkStates = ['invalid', 'expired', 'corrupted'];
@@ -336,7 +358,16 @@ function SystemStatusContainer() {
       <div className={styles.authCard}>
         <div className={styles.authTopRow}>
           <div>
-            <p className={styles.sectionLabel}>Authorization</p>
+            <div className={styles.authLabelRow}>
+              <p className={styles.sectionLabel}>Authorization</p>
+              <InfoTooltip label="How token refresh works" title="Token refresh" variant="inline">
+                Access tokens refresh automatically when they are close to expiring or after an auth error.
+                <br />
+                <strong>Next refresh: {nextRefreshEta || 'when issued/near expiry'}</strong>
+                <br />
+                Expect a quick credentials check; if refresh keeps failing, reset device link and relink this device to Earthquake Hub.
+              </InfoTooltip>
+            </div>
             <p className={`${styles.tokenHeadline} ${styles[`tone-${tokenStatusDetails.tone}`] || ''}`}>
               {tokenStatusDetails.headline}
             </p>

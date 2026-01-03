@@ -6,6 +6,10 @@ import ThemeToggle from "./ThemeToggle";
 
 function Header({ activeTab, onSelectTab }) {
   const headerRef = useRef(null);
+  const navRef = useRef(null);
+  const themeRef = useRef(null);
+  const [compactNav, setCompactNav] = React.useState(false);
+  const [hideTheme, setHideTheme] = React.useState(false);
 
   useEffect(() => {
     const el = headerRef.current;
@@ -14,6 +18,13 @@ function Header({ activeTab, onSelectTab }) {
     const applyHeight = () => {
       const rect = el.getBoundingClientRect();
       root.style.setProperty("--header-offset", `${Math.ceil(rect.height)}px`);
+      const viewportWidth = Math.min(window.innerWidth || rect.width, rect.width);
+      // Heuristic thresholds based on compact nav + theme widths:
+      const nextHideTheme = viewportWidth < 430;
+      const nextCompact = viewportWidth < 520;
+
+      setCompactNav(nextCompact);
+      setHideTheme(nextHideTheme);
     };
     applyHeight();
     const ro = new ResizeObserver(applyHeight);
@@ -39,8 +50,14 @@ function Header({ activeTab, onSelectTab }) {
           </div>
         </div>
         <div className={styles.headerRight}>
-          <ThemeToggle size="compact" />
-          <TabNav activeTab={activeTab} onSelect={onSelectTab} />
+          {!hideTheme && (
+            <div ref={themeRef}>
+              <ThemeToggle size="compact" />
+            </div>
+          )}
+          <div ref={navRef}>
+            <TabNav activeTab={activeTab} onSelect={onSelectTab} compact={compactNav} />
+          </div>
         </div>
       </div>
     </header>

@@ -62,6 +62,12 @@
   }
 }
 
+@media (max-height: 600px) {
+  :root {
+    --header-h: 56px;
+  }
+}
+
 :root[data-theme='dark'] {
   --text-primary: #e5e7eb;
   --text-contrast: #0b1220;

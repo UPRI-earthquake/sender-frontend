@@ -4,10 +4,27 @@ import styles from './Modal.module.css'
 import Toast from "../Toast.js";
 import LoadingScreen from "../LoadingScreen";
 
+const EyeIcon = ({ revealed }) => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    aria-hidden="true"
+  >
+    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3.2" />
+    {!revealed && <line x1="4" y1="4" x2="20" y2="20" strokeWidth="1.8" />}
+  </svg>
+);
+
 function DeviceLinkModal(props) {
 	//FORM INPUT - DEVICE LINK
 	const [inputUsername, setInputUsername] = useState('');
 	const [inputPassword, setInputPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 	const [inputLongitude, setInputLongitude] = useState('');
   const [inputLatitude, setInputLatitude] = useState('');
   const [inputElevation, setInputElevation] = useState('');
@@ -109,6 +126,7 @@ function DeviceLinkModal(props) {
 
 			setInputUsername('');
 			setInputPassword('');
+      setShowPassword(false);
       setInputLongitude('');
       setInputLatitude('');
       setInputElevation('');
@@ -169,6 +187,7 @@ function DeviceLinkModal(props) {
 
     setInputUsername('');
 		setInputPassword('');
+    setShowPassword(false);
     setInputLongitude(props.prefillLocation?.longitude === null || props.prefillLocation?.longitude === undefined ? '' : String(props.prefillLocation?.longitude));
     setInputLatitude(props.prefillLocation?.latitude === null || props.prefillLocation?.latitude === undefined ? '' : String(props.prefillLocation?.latitude));
     setInputElevation(props.prefillLocation?.elevation === null || props.prefillLocation?.elevation === undefined ? '' : String(props.prefillLocation?.elevation));
@@ -207,12 +226,21 @@ function DeviceLinkModal(props) {
 
               <div className={styles.inputField}>
                 <input
-                type="password"
-                  className={styles.modalInput}
+                  type={showPassword ? 'text' : 'password'}
+                  className={`${styles.modalInput} ${styles.passwordInput}`}
                   value={inputPassword}
                   onChange={(e) => setInputPassword(e.target.value)}
                 />
                 <label className={styles.inputLabel}>Password</label>
+                <button
+                  type="button"
+                  className={styles.eyeToggle}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  <EyeIcon revealed={showPassword} />
+                </button>
               </div>
 
               <div className={styles.inputField}>

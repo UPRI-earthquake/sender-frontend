@@ -6,6 +6,7 @@ import LoadingScreen from "../LoadingScreen";
 
 function DeviceResetModal(props) {
   const [loadingScreen, setLoadingScreen] = useState(false);
+  const [acknowledged, setAcknowledged] = useState(false);
   const modalRef = useRef(null);
 
   // ENTRANCE ANIMATION
@@ -104,16 +105,39 @@ function DeviceResetModal(props) {
             : ( <div></div> )}
           {/* End of Loading Screen */}
 
-          <div className={styles.modalHeader}>
-            Reset Device Link
-          </div>
+          <div className={styles.modalHeader}>Reset Device Link</div>
 
-          <div>
-            <p>This will remove the device from your account and clear all link data from this device and the server. Use this if the link is broken or you want to link this device to a different account.</p>
+          <div className={styles.modalBodyCopy}>
+            <p className={styles.warningTitle}>Destructive reset</p>
+            <p className={styles.warningText}>
+              {props.linkState === 'unlinked'
+                ? 'No active link detected. This cleans up stored credentials before relinking.'
+                : 'Clears stored credentials and removes this device from its current account.'}
+            </p>
+            <ul className={styles.warningList}>
+              <li>Stops sending data until the device is linked again.</li>
+              <li>Removes the account-device association on Earthquake Hub and locally.</li>
+              <li>Relink to resume streaming.</li>
+            </ul>
+            <label className={styles.ackRow}>
+              <input
+                type="checkbox"
+                checked={acknowledged}
+                onChange={(e) => setAcknowledged(e.target.checked)}
+                disabled={loadingScreen}
+              />
+              <span>I understand this will unlink the device and stop data transmission.</span>
+            </label>
           </div>
 
           <div className={styles.modalFooter}>
-            <button className={styles.submitBtn} onClick={handleDeviceReset} disabled={loadingScreen}>Confirm</button>
+            <button
+              className={styles.dangerBtn}
+              onClick={handleDeviceReset}
+              disabled={loadingScreen || !acknowledged}
+            >
+              Confirm reset
+            </button>
             <button className={styles.cancelBtn} onClick={handleModalClose} disabled={loadingScreen}>Cancel</button>
           </div>
         </div>
