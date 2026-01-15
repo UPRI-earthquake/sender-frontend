@@ -3,6 +3,7 @@ import { default as AddServerModal } from './../modals/AddServerModal';
 import { default as RemoveServerModal } from './../modals/RemoveServerModal';
 import styles from "./ServersInfoContainer.module.css";
 import Toast from '../Toast';
+import InfoTooltip from '../InfoTooltip';
 
 import axios from 'axios';
 
@@ -210,8 +211,12 @@ function ServersInfoContainer({ refreshFlag }) {
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.kicker}>Network</p>
-          <h2 className={styles.title}>Servers Information</h2>
-          <p className={styles.subtext}>Ringserver endpoints configured for this sender.</p>
+          <div className={styles.titleRow}>
+            <h2 className={styles.title}>Servers Information</h2>
+            <InfoTooltip label="Servers info" title="Ringservers" variant="inline">
+              Ringserver endpoints configured for this sender.
+            </InfoTooltip>
+          </div>
         </div>
         <div className={styles.headerActions}>
           <button

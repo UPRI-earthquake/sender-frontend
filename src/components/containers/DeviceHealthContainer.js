@@ -262,6 +262,7 @@ function DeviceHealthContainer() {
     || health.time?.target?.hostname
     || 'EarthquakeHub services';
   const hasResults = Boolean(health.network || health.time);
+  const showSubtitle = !hasResults;
 
   const networkDetails = buildNetworkDetails(health.network);
   const ringserverResults = Array.isArray(health.network?.ringservers) ? health.network.ringservers : [];
@@ -455,8 +456,12 @@ function DeviceHealthContainer() {
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.kicker}>HEALTH</p>
-          <h2 className={styles.title}>Connectivity Checks</h2>
-          <p className={styles.subtitle}>Network path and clock alignment checks against EarthquakeHub and configured ringservers.</p>
+          <h2 className={styles.title}>Connectivity</h2>
+          {showSubtitle && (
+            <p className={styles.subtitle}>
+              Network path and clock alignment checks against EarthquakeHub and configured ringservers.
+            </p>
+          )}
         </div>
         <div className={styles.headerActions}>
           <button

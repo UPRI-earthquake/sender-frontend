@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import DeviceResetModal from '../modals/DeviceResetModal';
+import InfoTooltip from '../InfoTooltip';
 import Toast from '../Toast';
 import styles from './RecoveryContainer.module.css';
 
@@ -77,10 +78,12 @@ function RecoveryContainer() {
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.kicker}>RECOVERY</p>
-          <h2 className={styles.title}>Reset</h2>
-          <p className={styles.subtitle}>
-            Use only to remove this device's association with the current account.
-          </p>
+          <div className={styles.titleRow}>
+            <h2 className={styles.title}>Reset</h2>
+            <InfoTooltip label="What reset does" title="Reset this sender" variant="inline">
+              Use only to remove this device's association with the current account.
+            </InfoTooltip>
+          </div>
         </div>
         <div className={styles.badgeStack}>
           <span className={`${styles.statusPill} ${linkedTone}`}>{linkedLabel}</span>

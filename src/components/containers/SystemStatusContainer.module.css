@@ -17,6 +17,13 @@
   gap: 16px;
 }
 
+.titleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .kicker {
   margin: 0;
   letter-spacing: 0.12em;

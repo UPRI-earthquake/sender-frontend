@@ -350,8 +350,12 @@ function SystemStatusContainer() {
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.kicker}>SYSTEM</p>
-          <h2 className={styles.title}>Operational Status</h2>
-          <p className={styles.subtitle}>{subtitle}</p>
+          <div className={styles.titleRow}>
+            <h2 className={styles.title}>Operational Status</h2>
+            <InfoTooltip label="Operational status info" title="Operational status" variant="inline">
+              {subtitle}
+            </InfoTooltip>
+          </div>
         </div>
       </div>
 
