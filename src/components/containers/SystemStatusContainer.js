@@ -315,7 +315,13 @@ function SystemStatusContainer() {
     if (seconds <= 0) return 'imminent';
     const mins = Math.floor(seconds / 60);
     const hours = Math.floor(mins / 60);
+    const days = Math.floor(hours / 24);
+    const remHours = hours % 24;
     const remMins = mins % 60;
+    if (days > 0) {
+      if (remHours > 0) return `${days}d ${remHours}h`;
+      return `${days}d`;
+    }
     if (hours <= 0) return `${mins}m`;
     return remMins > 0 ? `${hours}h ${remMins}m` : `${hours}h`;
   };
