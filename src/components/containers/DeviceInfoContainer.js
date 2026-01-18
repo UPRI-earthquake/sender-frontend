@@ -82,6 +82,9 @@ function DeviceInfoContainer(props) {
   }, [backendHost])
 
   const handleOnLinkingSuccess = () => {
+    if (props.setRefreshFlag) {
+      props.setRefreshFlag((prev) => !prev); // Refresh other panels (e.g. servers list) immediately after linking
+    }
     getDeviceInfo();
 
     // Set Toast Message
