@@ -48,11 +48,11 @@ function RecoveryContainer() {
     setResetting(inProgress);
   };
 
-  const handleResetSuccess = () => {
+  const handleResetSuccess = ({ message, toastType: nextToastType } = {}) => {
     setLinked(false);
     setLinkState('notLinked');
-    setToastType('success');
-    setToastMessage('Device link reset. Re-register to continue.');
+    setToastType(nextToastType || 'success');
+    setToastMessage(message || 'Device link reset. Use Link Device to link this device again.');
     setTimeout(() => setToastMessage(''), 5000);
   };
 

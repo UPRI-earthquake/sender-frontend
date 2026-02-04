@@ -47,10 +47,13 @@ function DeviceResetModal(props) {
         ? `${window.location.origin}/api`
         : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
 
-      await axios.post(`${backend_host}/device/reset-link`);
+      const response = await axios.post(`${backend_host}/device/reset-link`);
+      const payload = response?.data?.payload || {};
+      const message = response?.data?.message || 'Device link reset. Use Link Device to link this device again.';
+      const toastType = payload?.remoteReset === false ? 'warning' : 'success';
 
       if (props.onResetSuccess) {
-        props.onResetSuccess();
+        props.onResetSuccess({ message, toastType });
       }
       props.onModalClose();
     } catch (error) {
