@@ -7,8 +7,6 @@
 #   the device by /usr/local/bin/sender-frontend).
 # - It does NOT create or use UPRI-docker-network.
 
-version: '3.9'
-
 services:
   sender-frontend-dev:
     platform: linux/arm/v7
