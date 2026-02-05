@@ -1,20 +1,25 @@
 # For development & testing with sender-backend
-
-version: '3.9'
+#
+# This compose file is intended for local dev and is
+# deliberately isolated from the RShake device deployment:
+# - Container name is sender-frontend-dev (different from the
+#   production container name "sender-frontend" managed on
+#   the device by /usr/local/bin/sender-frontend).
+# - It does NOT create or use UPRI-docker-network.
 
 services:
-  sender-frontend:
+  sender-frontend-dev:
     platform: linux/arm/v7
-    container_name: sender-frontend
+    container_name: sender-frontend-dev
     build:
       context: .
       dockerfile: Dockerfile
       target: "base" # select dockerfile stage to use
-    image: "ghcr.io/upri-earthquake/sender-frontend:dev"
+    image: "sender-frontend:dev"
     volumes:
       # bind local dir to reflect changes in container
       # NOTE: includes everything, including all those in .dockerignore, specifically .env
       - ./:/app
-    ports:  # expose nginx ports to host
+    ports:  # expose dev server port to host
       - "3000:3000"
     command: npm start

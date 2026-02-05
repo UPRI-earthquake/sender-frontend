@@ -1,15 +1,15 @@
 # Stage 1: base, minimal setup for dev, shall contain non-js deps.
 #          To be bind-mounted to local dev files (includint node_modules)
-FROM arm32v7/node:18-alpine as base
+FROM arm32v7/node:18-alpine AS base
 
 EXPOSE 3000
 
 WORKDIR /app
 
 # Stage 2: prod
-FROM base as build
+FROM base AS build
 
-ENV PATH /app/node-modules/.bin:$PATH
+ENV PATH=/app/node-modules/.bin:$PATH
 ENV NODE_ENV=production
 COPY package.json ./
 COPY package-lock.json ./
