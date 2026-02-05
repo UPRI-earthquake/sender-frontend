@@ -3,11 +3,32 @@ import axios from "axios";
 import styles from './Modal.module.css'
 import Toast from "../Toast.js";
 import LoadingScreen from "../LoadingScreen";
+import { logError } from "../../utils/logging";
+
+const EyeIcon = ({ revealed }) => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    aria-hidden="true"
+  >
+    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3.2" />
+    {!revealed && <line x1="4" y1="4" x2="20" y2="20" strokeWidth="1.8" />}
+  </svg>
+);
 
 function DeviceLinkModal(props) {
-	//FORM INPUT - DEVICE LINK
-	const [inputUsername, setInputUsername] = useState('');
-	const [inputPassword, setInputPassword] = useState('');
+  //FORM INPUT - DEVICE LINK
+  const [inputUsername, setInputUsername] = useState('');
+  const [inputPassword, setInputPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [inputLongitude, setInputLongitude] = useState('');
+  const [inputLatitude, setInputLatitude] = useState('');
+  const [inputElevation, setInputElevation] = useState('');
   const [loadingScreen, setLoadingScreen] = useState(false);
   const modalRef = useRef(null);
 
@@ -27,69 +48,160 @@ function DeviceLinkModal(props) {
     );
   }, []);
 
+  useEffect(() => {
+    if (props.prefillLocation) {
+      const defaultLon = props.prefillLocation.longitude;
+      const defaultLat = props.prefillLocation.latitude;
+      const defaultElev = props.prefillLocation.elevation;
+
+      setInputLongitude(defaultLon === null || defaultLon === undefined ? '' : String(defaultLon));
+      setInputLatitude(defaultLat === null || defaultLat === undefined ? '' : String(defaultLat));
+      setInputElevation(defaultElev === null || defaultElev === undefined ? '' : String(defaultElev));
+    }
+  }, [props.prefillLocation]);
+
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('error')
 
-	//HANDLE LINK FORM SUBMIT
-	const handleDeviceLink = async (event) => {
-		event.preventDefault();
+  const sanitizeMessage = (message) => {
+    if (!message) return '';
+    let sanitized = message;
+    if (inputPassword) {
+      const escaped = inputPassword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(escaped, 'g');
+      sanitized = sanitized.replace(pattern, '******');
+    }
+    return sanitized;
+  };
+
+  //HANDLE LINK FORM SUBMIT
+  const handleDeviceLink = async (event) => {
+    event.preventDefault();
+
+    const trimmedLongitude = String(inputLongitude || '').trim();
+    const trimmedLatitude = String(inputLatitude || '').trim();
+    const trimmedElevation = String(inputElevation || '').trim();
+
+    const lon = Number(trimmedLongitude);
+    const lat = Number(trimmedLatitude);
+    const elev = Number(trimmedElevation);
+
+    if (!trimmedLongitude || !trimmedLatitude || !trimmedElevation) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Longitude, latitude, and elevation are required.');
+      return;
+    }
+
+    if (Number.isNaN(lon) || lon < -180 || lon > 180) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Longitude must be a number between −180 and 180.');
+      return;
+    }
+
+    if (Number.isNaN(lat) || lat < -90 || lat > 90) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Latitude must be a number between −90 and 90.');
+      return;
+    }
+
+    if (Number.isNaN(elev)) {
+      setToastType('error');
+      setToastMessage('Device Linking Error: Elevation must be a numeric value.');
+      return;
+    }
+
     setLoadingScreen(true);
 
-		try {
-			const backend_host = process.env.NODE_ENV === 'production'
+    try {
+      const backend_host = process.env.NODE_ENV === 'production'
         ? `${window.location.origin}/api`
         : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
-			await axios.post(`${backend_host}/device/link`, {
-				username: inputUsername,
-				password: inputPassword
-			});
+      await axios.post(`${backend_host}/device/link`, {
+        username: inputUsername,
+        password: inputPassword,
+        longitude: String(trimmedLongitude),
+        latitude: String(trimmedLatitude),
+        elevation: String(trimmedElevation),
+      });
 
-			setInputUsername('');
-			setInputPassword('');
-			
+      setInputUsername('');
+      setInputPassword('');
+      setShowPassword(false);
+      setInputLongitude('');
+      setInputLatitude('');
+      setInputElevation('');
+      
       setLoadingScreen(false); // remove loading screen
 
-			// Call onLinkingSuccess prop
-			props.onLinkingSuccess();
+      // Call onLinkingSuccess prop
+      props.onLinkingSuccess();
       props.onModalClose();
       
-		} catch (error) {
-			console.log(error);
-			let errorSummary = "";
+    } catch (error) {
+      logError('Device link failed:', error);
+      const status = error?.response?.status;
+      const hubMessage = error?.response?.data?.message || '';
+      const hubErrorCode = error?.response?.data?.errorCode;
+      const validationErrors = error?.response?.data?.validationErrors;
+      let errorSummary = '';
 
-			if (error.code === "ERR_NETWORK") {
-				errorSummary += error.message;
-			} else if (error.response.data.validationErrors) {
-				error.response.data.validationErrors.forEach(error => {
-					errorSummary += error.msg + ", \n";
-				});
-			} else if (error.response.data.message) {
-				errorSummary += error.response.data.message;
-			}
+      if (error.code === "ERR_NETWORK") {
+        errorSummary = "Cannot reach Earthquake Hub. Check your network connection.";
+      } else if (hubErrorCode === 'DEVICE_LINKED_TO_OTHER_ACCOUNT') {
+        errorSummary = "This device is linked to a different account. Ask the current owner to unlink it from rs.local:3000 or contact support.";
+      } else if (status === 401) {
+        errorSummary = "Username or password is incorrect.";
+      } else if (Array.isArray(validationErrors) && validationErrors.length) {
+        errorSummary = validationErrors.map((err) => err.msg).join(", ");
+      } else if (status === 409 && hubMessage) {
+        errorSummary = hubMessage;
+      } else if (
+        status === 403 ||
+        /unauthorized|forbidden|permission/i.test(hubMessage)
+      ) {
+        errorSummary = "Account is not allowed to link this device. Use an institution/operations account (not a barangay account) or request linking access.";
+      } else if (status >= 500 || /server error/i.test(hubMessage)) {
+        errorSummary = "Earthquake Hub returned a server error while linking. If this is a barangay account, it cannot be linked; otherwise try again or contact support.";
+      } else if (hubMessage) {
+        // Avoid surfacing outdated or policy-driven password messages
+        if (/password.*6\s?and\s?30/i.test(hubMessage)) {
+          errorSummary = "Username or password is incorrect.";
+        } else {
+          errorSummary = hubMessage;
+        }
+      } else if (status === 400) {
+        errorSummary = "Linking failed. Verify username/password and that the account has sensor access (citizen/sensor accounts only).";
+      } else {
+        errorSummary = "Linking failed. Verify credentials and try again.";
+      }
 
       // remove loading screen after timeout
       setTimeout(() => {
         setLoadingScreen(false);
         // Set Toast Content
         setToastType('error');
-        setToastMessage(`Device Linking Error: ${errorSummary}`);
+        setToastMessage(`Device Linking Error: ${sanitizeMessage(errorSummary)}`);
       }, 1000);
-		}
-	}
+    }
+  }
 
   const handleModalClose = (event) => {
     event.preventDefault();
 
     setInputUsername('');
-		setInputPassword('');
+    setInputPassword('');
+    setShowPassword(false);
+    setInputLongitude(props.prefillLocation?.longitude === null || props.prefillLocation?.longitude === undefined ? '' : String(props.prefillLocation?.longitude));
+    setInputLatitude(props.prefillLocation?.latitude === null || props.prefillLocation?.latitude === undefined ? '' : String(props.prefillLocation?.latitude));
+    setInputElevation(props.prefillLocation?.elevation === null || props.prefillLocation?.elevation === undefined ? '' : String(props.prefillLocation?.elevation));
 
     props.onModalClose();
   }
 
-	return (
-		<>
-			<Toast message={toastMessage} toastType={toastType}></Toast>
+  return (
+    <>
+      <Toast message={toastMessage} toastType={toastType}></Toast>
 
       <div className={styles.modalOverlay}>
         <div ref={modalRef} className={`${styles.modal} ${styles.hidden}`}>
@@ -118,12 +230,58 @@ function DeviceLinkModal(props) {
 
               <div className={styles.inputField}>
                 <input
-                type="password"
-                  className={styles.modalInput}
+                  type={showPassword ? 'text' : 'password'}
+                  className={`${styles.modalInput} ${styles.passwordInput}`}
                   value={inputPassword}
                   onChange={(e) => setInputPassword(e.target.value)}
                 />
                 <label className={styles.inputLabel}>Password</label>
+                <button
+                  type="button"
+                  className={styles.eyeToggle}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  <EyeIcon revealed={showPassword} />
+                </button>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  type="number"
+                  step="0.000001"
+                  min="-180"
+                  max="180"
+                  value={inputLongitude}
+                  onChange={(e) => setInputLongitude(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Longitude: <small>(in degree coordinates, −180 to 180; e.g. `10.1234`)</small></label>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  type="number"
+                  step="0.000001"
+                  min="-90"
+                  max="90"
+                  value={inputLatitude}
+                  onChange={(e) => setInputLatitude(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Latitude: <small>(in degree coordinates, −90 to 90; e.g. `10.1234`)</small></label>
+              </div>
+
+              <div className={styles.inputField}>
+                <input
+                  className={styles.modalInput}
+                  type="number"
+                  step="0.01"
+                  value={inputElevation}
+                  onChange={(e) => setInputElevation(e.target.value)}
+                />
+                <label className={styles.inputLabel}>Elevation: <small>(in meters; relative to sea level e.g. `1.23`)</small></label>
               </div>
             </div>
 
@@ -134,8 +292,8 @@ function DeviceLinkModal(props) {
           </form>
         </div>
       </div>
-		</>
-	)
+    </>
+  )
 }
 
 export default DeviceLinkModal;

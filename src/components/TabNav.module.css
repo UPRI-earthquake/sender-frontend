@@ -1,0 +1,108 @@
+.navShell {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.navBar {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  align-items: center;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  /* box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08); */
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbars to prevent visible lines under the nav */
+.navBar::-webkit-scrollbar {
+  display: none;
+}
+.navBar {
+  scrollbar-width: none;
+}
+
+.tabButton {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: box-shadow 160ms ease, transform 160ms ease, border-color 160ms ease,
+    background 160ms ease, color 160ms ease;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  min-width: 0;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.tabButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  color: var(--text-primary);
+}
+
+.active {
+  border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+  color: var(--text-primary);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
+  position: relative;
+}
+
+.active:hover {
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+.tabLabel {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.tabIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabButton:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary-strong) 60%, transparent);
+  outline-offset: 3px;
+}
+
+html[data-theme='dark'] .navBar {
+  background: rgba(17, 24, 39, 0.78);
+  border-color: #1f2937;
+}
+
+html[data-theme='dark'] .tabButton:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme='dark'] .active {
+  color: #e5e7eb;
+  background: color-mix(in srgb, var(--primary) 26%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 36%, #1f2937);
+}
+
+@media (max-width: 720px) {
+  .navShell {
+    width: auto;
+    justify-content: flex-end;
+  }
+}

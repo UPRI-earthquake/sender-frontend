@@ -49,21 +49,15 @@ EOF
 }
 
 function pull_container() {
-    if docker inspect "$IMAGE" >/dev/null 2>&1; then
-      echo -en "[  \e[32mOK\e[0m  ] "
-      echo "Image $IMAGE already exists."
-      return 0 # Success
+    docker pull "$IMAGE"
+    if [[ $? -eq 0 ]]; then
+        echo -en "[  \e[32mOK\e[0m  ] "
+        echo "Image $IMAGE pulled successfully."
+        return 0
     else
-      docker pull "$IMAGE"
-      if [[ $? -eq 0 ]]; then
-          echo -en "[  \e[32mOK\e[0m  ] "
-          echo "Image $IMAGE pulled successfully."
-          return 0
-      else
-          echo -en "[\e[1;31mFAILED\e[0m] "
-          echo "Failed to pull image $IMAGE."
-          return 1
-      fi
+        echo -en "[\e[1;31mFAILED\e[0m] "
+        echo "Failed to pull image $IMAGE."
+        return 1
     fi
 }
 
@@ -111,6 +105,9 @@ function create_container() {
             --env REACT_APP_BACKEND_PORT=5001 \
             --env NGINX_PORT=3000 \
             --publish 0.0.0.0:3000:3000 \
+            --log-driver json-file \
+            --log-opt max-size=10m \
+            --log-opt max-file=3 \
             "$IMAGE"
             # volume: workaround for docker's oci runtime error
             # net: make sender-backend be accessible by name from frontend
@@ -145,6 +142,15 @@ function start_container() {
             return 1
         fi
     fi
+}
+
+function update_container() {
+    stop_container
+    remove_container
+    pull_container || return 1
+    create_network
+    create_container
+    start_container
 }
 
 ## UNINSTALL FUNCTIONS
@@ -274,6 +280,9 @@ case $1 in
     "START")
         start_container
         ;;
+    "UPDATE")
+        update_container
+        ;;
     "STOP")
         stop_container
         ;;
@@ -290,9 +299,7 @@ case $1 in
         uninstall_service
         ;;
     *)
-        echo "Invalid argument. Usage: ./script.sh [INSTALL_SERVICE|NETWORK_SETUP|PULL|CREATE|START|STOP|REMOVE_NETWORK|REMOVE_IMAGE|REMOVE_CONTAINER|UNINSTALL_SERVICE]"
+        echo "Invalid argument. Usage: ./script.sh [INSTALL_SERVICE|NETWORK_SETUP|PULL|CREATE|START|STOP|UPDATE|REMOVE_NETWORK|REMOVE_IMAGE|REMOVE_CONTAINER|UNINSTALL_SERVICE]"
         ;;
 esac
-
-
 
