@@ -141,11 +141,14 @@ function DeviceLinkModal(props) {
 			console.log(error);
 			const status = error?.response?.status;
       const hubMessage = error?.response?.data?.message || '';
+      const hubErrorCode = error?.response?.data?.errorCode;
 			const validationErrors = error?.response?.data?.validationErrors;
 			let errorSummary = '';
 
 			if (error.code === "ERR_NETWORK") {
 				errorSummary = "Cannot reach Earthquake Hub. Check your network connection.";
+			} else if (hubErrorCode === 'DEVICE_LINKED_TO_OTHER_ACCOUNT') {
+        errorSummary = "This device is linked to a different account. Ask the current owner to release it from rs.local:3000 or contact support.";
 			} else if (status === 401) {
         errorSummary = "Username or password is incorrect.";
       } else if (Array.isArray(validationErrors) && validationErrors.length) {
