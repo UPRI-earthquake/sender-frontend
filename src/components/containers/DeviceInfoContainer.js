@@ -4,6 +4,7 @@ import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 import styles from "./DeviceInfoContainer.module.css";
 import Toast from '../Toast';
+import { logError } from '../../utils/logging';
 
 function DeviceInfoContainer(props) {
   const backendHost = useMemo(() => (
@@ -73,7 +74,7 @@ function DeviceInfoContainer(props) {
         elevation: formattedElevation || '',
       });
     } catch (error) {
-      console.log("Axios Error: " + error)
+      logError('Device info fetch failed:', error);
     }
   }
 
@@ -118,7 +119,7 @@ function DeviceInfoContainer(props) {
       setToastType('success');
       setToastMessage('Location values refreshed from RShake config');
     } catch (error) {
-      console.log(error);
+      logError('Host metadata refresh failed:', error);
       const errorSummary = error?.response?.data?.message;
       setToastType('error');
       setToastMessage(errorSummary || 'Unable to read metadata from RShake config.');

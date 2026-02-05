@@ -4,6 +4,7 @@ import { default as RemoveServerModal } from './../modals/RemoveServerModal';
 import styles from "./ServersInfoContainer.module.css";
 import Toast from '../Toast';
 import InfoTooltip from '../InfoTooltip';
+import { logError } from '../../utils/logging';
 
 import axios from 'axios';
 
@@ -73,7 +74,7 @@ function ServersInfoContainer({ refreshFlag }) {
       setLinked(Boolean(devicePayload.linked));
       setLinkState(devicePayload.linkState || 'unknown');
     } catch (error) {
-      console.log('Error fetching servers:', error);
+      logError('Error fetching servers:', error);
       setPollDelay((prev) => Math.min(prev * 2, MAX_POLL_MS));
     }
   }, [BASE_POLL_MS, MAX_POLL_MS]);
@@ -108,8 +109,8 @@ function ServersInfoContainer({ refreshFlag }) {
       showToast('Server removed');
       await fetchServers();
     } catch (error) {
-      console.log('Remove server failed:', error);
-      showToast('Unable to remove server. See console for details.', 'error');
+      logError('Remove server failed:', error);
+      showToast('Unable to remove server. Please try again.', 'error');
     }
   };
 

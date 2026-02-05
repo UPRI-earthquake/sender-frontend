@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import styles from './DeviceHealthContainer.module.css';
+import { logError } from '../../utils/logging';
 
 const formatTimestamp = (timestampMs) => {
   if (!timestampMs) return null;
@@ -244,12 +245,12 @@ function DeviceHealthContainer() {
       setExpandedDetails({});
       setTruncatedDetails({});
     } catch (error) {
-      console.log("Health check error: ", error);
+      logError('Health check failed:', error);
       setHealth({
         checking: false,
         network: null,
         time: null,
-        error: 'Health check failed. See console for details.',
+        error: 'Health check failed. Please try again.',
         lastRun: Date.now(),
       });
       setExpandedChecks({ network: false, time: false });

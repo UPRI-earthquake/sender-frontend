@@ -3,6 +3,7 @@ import Toast from "../Toast.js";
 import axios from 'axios';
 import styles from './Modal.module.css'
 import LoadingScreen from "../LoadingScreen.js";
+import { logError } from "../../utils/logging";
 
 function AddServerModal(props) {
   //FORM INPUT - ADD NEW SERVER
@@ -27,7 +28,7 @@ function AddServerModal(props) {
       setSelectedInstitution(response.data.payload[0].username)
     } catch (error) {
       // Handle any error that occurred during the request
-      console.error('Error:', error.message);
+      logError('Ringserver hosts fetch failed:', error);
     }
   }
 
@@ -68,12 +69,10 @@ function AddServerModal(props) {
       const backend_host = process.env.NODE_ENV === 'production'
         ? `${window.location.origin}/api`
         : `http://${window.location.hostname}:${window['ENV'].REACT_APP_BACKEND_PORT}`;
-      const response = await axios.post(`${backend_host}/servers/add`, {
+      await axios.post(`${backend_host}/servers/add`, {
         url: selectedHostUrl,
         institutionName: selectedInstitution
       });
-
-      console.log(response);
 
       // Call onAddServerSuccess prop
       props.onAddServerSuccess();
@@ -81,7 +80,7 @@ function AddServerModal(props) {
       
       setLoadingScreen(false); // remove loading screen 
     } catch (error) {
-      console.log(error);
+      logError('Add server failed:', error);
 			let errorSummary = "";
 
 			if (error.code === "ERR_NETWORK") {

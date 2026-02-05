@@ -4,6 +4,7 @@ import DeviceResetModal from '../modals/DeviceResetModal';
 import InfoTooltip from '../InfoTooltip';
 import Toast from '../Toast';
 import styles from './RecoveryContainer.module.css';
+import { logError } from '../../utils/logging';
 
 function RecoveryContainer() {
   const backendHost = useMemo(() => (
@@ -32,7 +33,7 @@ function RecoveryContainer() {
         setLinkState(payload.linked ? 'linked' : 'notLinked');
       }
     } catch (error) {
-      console.log('Recovery: unable to load device info', error);
+      logError('Recovery: unable to load device info', error);
       setLinked(false);
       setLinkState('unknown');
     } finally {

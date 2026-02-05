@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import styles from './SystemStatusContainer.module.css';
 import InfoTooltip from '../InfoTooltip';
+import { logError } from '../../utils/logging';
 
 const formatBytes = (bytes) => {
   if (typeof bytes !== 'number' || Number.isNaN(bytes) || bytes < 0) {
@@ -96,7 +97,6 @@ function SystemStatusContainer() {
   ), []);
 
   const [resources, setResources] = useState({ disk: null, cpu: null });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [tokenStatus, setTokenStatus] = useState({ state: 'missing' });
@@ -107,7 +107,6 @@ function SystemStatusContainer() {
   const [cpuRefreshing, setCpuRefreshing] = useState(false);
 
   const fetchSystemState = async () => {
-    setLoading(true);
     setError(null);
     try {
       const [resourcesResult, deviceResult] = await Promise.allSettled([
@@ -139,10 +138,9 @@ function SystemStatusContainer() {
 
       setLastUpdated(Date.now());
     } catch (err) {
-      console.log('Resource health error: ', err);
+      logError('Resource health error:', err);
       setError('Unable to load system stats');
     } finally {
-      setLoading(false);
       setDiskRefreshing(false);
       setCpuRefreshing(false);
     }
@@ -159,7 +157,7 @@ function SystemStatusContainer() {
       await axios.post(`${backendHost}/device/refresh-token`);
       await fetchSystemState();
     } catch (error) {
-      console.log('Token refresh error: ', error);
+      logError('Token refresh error:', error);
       await fetchSystemState();
     } finally {
       setRefreshingToken(false);
@@ -177,7 +175,7 @@ function SystemStatusContainer() {
       }));
       setLastUpdated(Date.now());
     } catch (err) {
-      console.log('Disk refresh error: ', err);
+      logError('Disk refresh error:', err);
       setError('Unable to load disk stats');
     } finally {
       setDiskRefreshing(false);
@@ -195,7 +193,7 @@ function SystemStatusContainer() {
       }));
       setLastUpdated(Date.now());
     } catch (err) {
-      console.log('CPU refresh error: ', err);
+      logError('CPU refresh error:', err);
       setError('Unable to load CPU stats');
     } finally {
       setCpuRefreshing(false);

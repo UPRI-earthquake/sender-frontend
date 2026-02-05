@@ -3,6 +3,7 @@ import axios from "axios";
 import styles from './Modal.module.css'
 import Toast from "../Toast.js";
 import LoadingScreen from "../LoadingScreen";
+import { logError } from "../../utils/logging";
 
 function DeviceUnlinkModal(props) {
 
@@ -46,7 +47,7 @@ function DeviceUnlinkModal(props) {
 
       setLoadingScreen(false); // remove loading screen
 		} catch (error) {
-			console.log(error);
+			logError('Device unlink failed:', error);
 			let errorSummary = "";
 
 			if (error.code === "ERR_NETWORK") {

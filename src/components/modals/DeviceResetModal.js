@@ -3,6 +3,7 @@ import axios from "axios";
 import styles from './Modal.module.css'
 import Toast from "../Toast.js";
 import LoadingScreen from "../LoadingScreen";
+import { logError } from "../../utils/logging";
 
 function DeviceResetModal(props) {
   const [loadingScreen, setLoadingScreen] = useState(false);
@@ -57,7 +58,7 @@ function DeviceResetModal(props) {
       }
       props.onModalClose();
     } catch (error) {
-      console.log(error);
+      logError('Device reset failed:', error);
       let errorSummary = "Unable to reset link. Try again in a moment.";
 
       if (error.code === "ERR_NETWORK") {
