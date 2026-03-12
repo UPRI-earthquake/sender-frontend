@@ -82,6 +82,15 @@ const formatTimestamp = (timestampMs) => {
   return date.toLocaleString(undefined, { hour12: false });
 };
 
+const formatUnixSeconds = (seconds) => {
+  if (!Number.isFinite(Number(seconds))) return 'n/a';
+  const date = new Date(Number(seconds) * 1000);
+  if (Number.isNaN(date.getTime())) return 'n/a';
+  return date.toLocaleString(undefined, { hour12: false });
+};
+
+const toLowerString = (value) => String(value || '').trim().toLowerCase();
+
 const classifyUsage = (value) => {
   const pct = clampPercent(value);
   if (pct >= 90) return { label: 'Critical', tone: 'danger' };
@@ -105,13 +114,16 @@ function SystemStatusContainer() {
   const [deviceLinked, setDeviceLinked] = useState(false);
   const [diskRefreshing, setDiskRefreshing] = useState(false);
   const [cpuRefreshing, setCpuRefreshing] = useState(false);
+  const [senderState, setSenderState] = useState(null);
+  const [senderStateRefreshing, setSenderStateRefreshing] = useState(false);
 
   const fetchSystemState = async () => {
     setError(null);
     try {
-      const [resourcesResult, deviceResult] = await Promise.allSettled([
+      const [resourcesResult, deviceResult, senderStateResult] = await Promise.allSettled([
         axios.get(`${backendHost}/health/resources`),
         axios.get(`${backendHost}/device/info`),
+        axios.get(`${backendHost}/health/sender-state`),
       ]);
 
       if (resourcesResult.status === 'fulfilled') {
@@ -136,6 +148,12 @@ function SystemStatusContainer() {
         setDeviceLinked(false);
       }
 
+      if (senderStateResult.status === 'fulfilled') {
+        setSenderState(senderStateResult.value?.data?.payload || null);
+      } else {
+        setSenderState(null);
+      }
+
       setLastUpdated(Date.now());
     } catch (err) {
       logError('Resource health error:', err);
@@ -143,6 +161,7 @@ function SystemStatusContainer() {
     } finally {
       setDiskRefreshing(false);
       setCpuRefreshing(false);
+      setSenderStateRefreshing(false);
     }
   };
 
@@ -197,6 +216,20 @@ function SystemStatusContainer() {
       setError('Unable to load CPU stats');
     } finally {
       setCpuRefreshing(false);
+    }
+  };
+
+  const handleRefreshSenderState = async () => {
+    setSenderStateRefreshing(true);
+    try {
+      const response = await axios.get(`${backendHost}/health/sender-state`);
+      setSenderState(response?.data?.payload || null);
+      setLastUpdated(Date.now());
+    } catch (err) {
+      logError('Sender state refresh error:', err);
+      setError('Unable to load sender runtime state');
+    } finally {
+      setSenderStateRefreshing(false);
     }
   };
 
@@ -349,6 +382,46 @@ function SystemStatusContainer() {
     || relinkNotice.required;
   const lastUpdatedText = formatTimestamp(lastUpdated);
 
+  const senderStateCheckedAt = senderState?.checkedAt
+    ? new Date(senderState.checkedAt).toLocaleString(undefined, { hour12: false })
+    : 'n/a';
+  const autoUpdateInfo = senderState?.autoUpdate || {};
+  const autoUpdatePayload = autoUpdateInfo?.state || {};
+  const rollbackInfo = autoUpdatePayload?.rollback || {};
+  const rollbackResult = rollbackInfo?.result || autoUpdatePayload?.ROLLBACK_RESULT || 'unknown';
+  const backendUpdateResult = autoUpdatePayload?.backendResult || autoUpdatePayload?.BACKEND_PULL_STATE || 'n/a';
+  const frontendUpdateResult = autoUpdatePayload?.frontendResult || autoUpdatePayload?.FRONTEND_PULL_STATE || 'n/a';
+  const bundleTag = autoUpdatePayload?.bundleTag || autoUpdatePayload?.BUNDLE_TAG || 'n/a';
+
+  const watchdogInfo = senderState?.watchdog || {};
+  const watchdogState = watchdogInfo?.state || {};
+  const watchdogBackendRestart = watchdogState?.WATCHDOG_BACKEND_LAST_RESTART_TS;
+  const watchdogFrontendRestart = watchdogState?.WATCHDOG_FRONTEND_LAST_RESTART_TS;
+
+  const diskAlertInfo = senderState?.diskAlerts || {};
+  const diskAlertState = diskAlertInfo?.state || {};
+  const diskAlertLevel = diskAlertState?.LAST_DISK_ALERT_LEVEL
+    || diskAlertState?.DISK_ALERT_LAST_LEVEL
+    || 'unknown';
+  const diskAlertFreePct = diskAlertState?.LAST_DISK_ALERT_FREE_PCT
+    || diskAlertState?.DISK_ALERT_LAST_FREE_PCT
+    || null;
+
+  const tokenAlertInfo = senderState?.tokenRefreshAlerts || {};
+  const tokenAlertState = tokenAlertInfo?.state || {};
+  const tokenRefreshFailures = Number(tokenAlertState?.failureCount ?? 0);
+
+  const senderRuntimeTone = (() => {
+    const backendFailed = toLowerString(backendUpdateResult).includes('fail');
+    const frontendFailed = toLowerString(frontendUpdateResult).includes('fail');
+    const rollbackFailed = toLowerString(rollbackResult).includes('fail');
+    const diskLevel = toLowerString(diskAlertLevel);
+    if (backendFailed || frontendFailed || rollbackFailed || diskLevel === 'critical') return 'danger';
+    if (diskLevel === 'warn' || diskLevel === 'warning' || tokenRefreshFailures > 0) return 'warn';
+    if (!senderState) return 'muted';
+    return 'success';
+  })();
+
   return (
     <div className={styles.systemStatus}>
       <div className={styles.panelHeader}>
@@ -394,6 +467,82 @@ function SystemStatusContainer() {
             <p className={styles.relinkNotice}>{relinkNotice.helper}</p>
           )}
         </div>
+      </div>
+
+      <div className={styles.runtimeCard}>
+        <div className={styles.metricHeader}>
+          <div className={styles.authLabelRow}>
+            <p className={styles.sectionLabel}>Sender runtime</p>
+            <InfoTooltip label="Sender runtime info" title="Sender runtime state" variant="inline">
+              Snapshot from backend `/health/sender-state` for update/watchdog/disk/token-refresh state files.
+            </InfoTooltip>
+          </div>
+          <button
+            type="button"
+            className={`${styles.iconButton} ${senderStateRefreshing ? styles.iconButtonRefreshing : ''}`}
+            onClick={handleRefreshSenderState}
+            disabled={senderStateRefreshing}
+            title="Refresh sender state"
+            aria-label="Refresh sender state"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="23 4 23 10 17 10"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <polyline
+                points="1 20 1 14 7 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <p className={`${styles.metricStatus} ${styles[`tone-${senderRuntimeTone}`] || ''}`}>
+          {senderState ? 'State file snapshot available' : 'State snapshot unavailable'}
+        </p>
+        <div className={styles.runtimeGrid}>
+          <p className={styles.runtimeItem}><strong>Auto-update:</strong> {backendUpdateResult} / {frontendUpdateResult}</p>
+          <p className={styles.runtimeItem}><strong>Bundle:</strong> {bundleTag}</p>
+          <p className={styles.runtimeItem}><strong>Rollback:</strong> {rollbackResult}</p>
+          <p className={styles.runtimeItem}>
+            <strong>Watchdog restarts:</strong> backend {formatUnixSeconds(watchdogBackendRestart)}, frontend {formatUnixSeconds(watchdogFrontendRestart)}
+          </p>
+          <p className={styles.runtimeItem}>
+            <strong>Disk alert:</strong> {diskAlertLevel}{diskAlertFreePct !== null && diskAlertFreePct !== undefined ? ` (${diskAlertFreePct}% free)` : ''}
+          </p>
+          <p className={styles.runtimeItem}><strong>Token refresh failures:</strong> {tokenRefreshFailures}</p>
+        </div>
+        <p className={styles.runtimeMeta}>Checked: {senderStateCheckedAt}</p>
       </div>
 
       <div className={styles.metricsGrid}>
