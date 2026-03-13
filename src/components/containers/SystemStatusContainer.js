@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import styles from './SystemStatusContainer.module.css';
 import InfoTooltip from '../InfoTooltip';
@@ -116,14 +116,15 @@ function SystemStatusContainer() {
   const [cpuRefreshing, setCpuRefreshing] = useState(false);
   const [senderState, setSenderState] = useState(null);
   const [senderStateRefreshing, setSenderStateRefreshing] = useState(false);
+  const [senderStateError, setSenderStateError] = useState(null);
+  const [senderRuntimeExpanded, setSenderRuntimeExpanded] = useState(false);
 
-  const fetchSystemState = async () => {
+  const fetchSystemState = useCallback(async () => {
     setError(null);
     try {
-      const [resourcesResult, deviceResult, senderStateResult] = await Promise.allSettled([
+      const [resourcesResult, deviceResult] = await Promise.allSettled([
         axios.get(`${backendHost}/health/resources`),
         axios.get(`${backendHost}/device/info`),
-        axios.get(`${backendHost}/health/sender-state`),
       ]);
 
       if (resourcesResult.status === 'fulfilled') {
@@ -148,12 +149,6 @@ function SystemStatusContainer() {
         setDeviceLinked(false);
       }
 
-      if (senderStateResult.status === 'fulfilled') {
-        setSenderState(senderStateResult.value?.data?.payload || null);
-      } else {
-        setSenderState(null);
-      }
-
       setLastUpdated(Date.now());
     } catch (err) {
       logError('Resource health error:', err);
@@ -163,11 +158,31 @@ function SystemStatusContainer() {
       setCpuRefreshing(false);
       setSenderStateRefreshing(false);
     }
-  };
+  }, [backendHost]);
 
   useEffect(() => {
     fetchSystemState();
-  }, [backendHost]);
+  }, [fetchSystemState]);
+
+  const refreshSenderState = async ({ withSpinner = true } = {}) => {
+    if (withSpinner) {
+      setSenderStateRefreshing(true);
+    }
+    setSenderStateError(null);
+    try {
+      const response = await axios.get(`${backendHost}/health/sender-state`);
+      setSenderState(response?.data?.payload || null);
+      setLastUpdated(Date.now());
+    } catch (err) {
+      logError('Sender state refresh error:', err);
+      setSenderState(null);
+      setSenderStateError('Unable to load sender runtime state');
+    } finally {
+      if (withSpinner) {
+        setSenderStateRefreshing(false);
+      }
+    }
+  };
 
   const handleManualTokenRefresh = async () => {
     setRefreshingToken(true);
@@ -220,16 +235,14 @@ function SystemStatusContainer() {
   };
 
   const handleRefreshSenderState = async () => {
-    setSenderStateRefreshing(true);
-    try {
-      const response = await axios.get(`${backendHost}/health/sender-state`);
-      setSenderState(response?.data?.payload || null);
-      setLastUpdated(Date.now());
-    } catch (err) {
-      logError('Sender state refresh error:', err);
-      setError('Unable to load sender runtime state');
-    } finally {
-      setSenderStateRefreshing(false);
+    await refreshSenderState();
+  };
+
+  const handleToggleSenderRuntime = () => {
+    const nextExpanded = !senderRuntimeExpanded;
+    setSenderRuntimeExpanded(nextExpanded);
+    if (nextExpanded && !senderState && !senderStateRefreshing) {
+      refreshSenderState();
     }
   };
 
@@ -477,72 +490,114 @@ function SystemStatusContainer() {
               Snapshot from backend `/health/sender-state` for update/watchdog/disk/token-refresh state files.
             </InfoTooltip>
           </div>
-          <button
-            type="button"
-            className={`${styles.iconButton} ${senderStateRefreshing ? styles.iconButtonRefreshing : ''}`}
-            onClick={handleRefreshSenderState}
-            disabled={senderStateRefreshing}
-            title="Refresh sender state"
-            aria-label="Refresh sender state"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className={styles.runtimeHeaderActions}>
+            {senderRuntimeExpanded && (
+              <button
+                type="button"
+                className={`${styles.iconButton} ${senderStateRefreshing ? styles.iconButtonRefreshing : ''}`}
+                onClick={handleRefreshSenderState}
+                disabled={senderStateRefreshing}
+                title="Refresh sender state"
+                aria-label="Refresh sender state"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <polyline
+                    points="23 4 23 10 17 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <polyline
+                    points="1 20 1 14 7 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
+            <button
+              type="button"
+              className={`${styles.iconButton} ${styles.chevronButton}`}
+              onClick={handleToggleSenderRuntime}
+              title={senderRuntimeExpanded ? 'Hide sender runtime details' : 'Show sender runtime details'}
+              aria-label={senderRuntimeExpanded ? 'Hide sender runtime details' : 'Show sender runtime details'}
+              aria-expanded={senderRuntimeExpanded}
+              aria-controls="sender-runtime-panel"
             >
-              <polyline
-                points="23 4 23 10 17 10"
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <polyline
-                points="1 20 1 14 7 14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+                xmlns="http://www.w3.org/2000/svg"
+                className={`${styles.chevronIcon} ${senderRuntimeExpanded ? styles.chevronExpanded : ''}`}
+              >
+                <polyline
+                  points="6 9 12 15 18 9"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
-        <p className={`${styles.metricStatus} ${styles[`tone-${senderRuntimeTone}`] || ''}`}>
-          {senderState ? 'State file snapshot available' : 'State snapshot unavailable'}
-        </p>
-        <div className={styles.runtimeGrid}>
-          <p className={styles.runtimeItem}><strong>Auto-update:</strong> {backendUpdateResult} / {frontendUpdateResult}</p>
-          <p className={styles.runtimeItem}><strong>Bundle:</strong> {bundleTag}</p>
-          <p className={styles.runtimeItem}><strong>Rollback:</strong> {rollbackResult}</p>
-          <p className={styles.runtimeItem}>
-            <strong>Watchdog restarts:</strong> backend {formatUnixSeconds(watchdogBackendRestart)}, frontend {formatUnixSeconds(watchdogFrontendRestart)}
+        {!senderRuntimeExpanded ? (
+          <p className={styles.runtimeCollapsedCopy}>
+            Troubleshooting details. Most users can ignore this section.
           </p>
-          <p className={styles.runtimeItem}>
-            <strong>Disk alert:</strong> {diskAlertLevel}{diskAlertFreePct !== null && diskAlertFreePct !== undefined ? ` (${diskAlertFreePct}% free)` : ''}
-          </p>
-          <p className={styles.runtimeItem}><strong>Token refresh failures:</strong> {tokenRefreshFailures}</p>
-        </div>
-        <p className={styles.runtimeMeta}>Checked: {senderStateCheckedAt}</p>
+        ) : (
+          <div id="sender-runtime-panel" className={styles.runtimeBody}>
+            <p className={`${styles.metricStatus} ${styles[`tone-${senderRuntimeTone}`] || ''}`}>
+              {senderState ? 'State file snapshot available' : 'State snapshot unavailable'}
+            </p>
+            {senderStateError && (
+              <p className={styles.errorText}>{senderStateError}</p>
+            )}
+            <div className={styles.runtimeGrid}>
+              <p className={styles.runtimeItem}><strong>Auto-update:</strong> {backendUpdateResult} / {frontendUpdateResult}</p>
+              <p className={styles.runtimeItem}><strong>Bundle:</strong> {bundleTag}</p>
+              <p className={styles.runtimeItem}><strong>Rollback:</strong> {rollbackResult}</p>
+              <p className={styles.runtimeItem}>
+                <strong>Watchdog restarts:</strong> backend {formatUnixSeconds(watchdogBackendRestart)}, frontend {formatUnixSeconds(watchdogFrontendRestart)}
+              </p>
+              <p className={styles.runtimeItem}>
+                <strong>Disk alert:</strong> {diskAlertLevel}{diskAlertFreePct !== null && diskAlertFreePct !== undefined ? ` (${diskAlertFreePct}% free)` : ''}
+              </p>
+              <p className={styles.runtimeItem}><strong>Token refresh failures:</strong> {tokenRefreshFailures}</p>
+            </div>
+            <p className={styles.runtimeMeta}>Checked: {senderStateCheckedAt}</p>
+          </div>
+        )}
       </div>
 
       <div className={styles.metricsGrid}>
