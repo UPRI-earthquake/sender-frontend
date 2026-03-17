@@ -117,7 +117,7 @@ function DeviceInfoContainer(props) {
       await axios.post(`${backendHost}/device/config/refresh`);
       await getDeviceInfo();
       setToastType('success');
-      setToastMessage('Location values refreshed from RShake config');
+      setToastMessage('Device metadata refreshed from RShake config');
     } catch (error) {
       logError('Host metadata refresh failed:', error);
       const errorSummary = error?.response?.data?.message;
@@ -199,7 +199,7 @@ function DeviceInfoContainer(props) {
             <div className={styles.sectionLabelRow}>
               <div>
                 <p className={styles.sectionLabel}>Location</p>
-                <p className={styles.sectionHelper}>Synced from device host configuration.</p>
+                <p className={styles.sectionHelper}>Synced from device host configuration (network, station, and location).</p>
               </div>
               <span className={styles.iconOrnament}>
                 <button
@@ -208,7 +208,7 @@ function DeviceInfoContainer(props) {
                   onClick={handleRefreshHostMetadata}
                   disabled={refreshingMetadata}
                   title="Refresh from RShake config"
-                  aria-label="Refresh location from RShake config"
+                  aria-label="Refresh device metadata from RShake config"
                 >
                   <svg
                     width="18"
