@@ -42,8 +42,9 @@ For local development, the sender-backend repository is needed to serve the requ
         See [this cheatsheet](https://upri-earthquake.github.io/docker-cheatsheet) for useful docker recipes.
 
 ## Publishing container image (For admins)
-1. Build the image, and tag with the correct [semantic versioning](https://semver.org/): 
+1. Build the image locally, and tag with the correct [semantic versioning](https://semver.org/): 
     > Note: replace X.Y.Z, and you should be at the same directory as the Dockerfile
+    > This keeps a local copy first so retagging and rollback are easier before publishing.
 
     ```bash
     docker buildx build --platform linux/arm/v7 \
@@ -52,18 +53,23 @@ For local development, the sender-backend repository is needed to serve the requ
       --build-arg VCS_REF=$(git rev-parse --short HEAD) \
       -t ghcr.io/upri-earthquake/sender-frontend:X.Y.Z \
       -t ghcr.io/upri-earthquake/sender-frontend:latest \
-      --push --provenance=false .
+      --load --provenance=false .
     ```
-2. Authenticate to ghcr.io before publishing:
+2. Validate bundle labels on the local image:
+    ```bash
+    docker inspect ghcr.io/upri-earthquake/sender-frontend:X.Y.Z \
+      --format '{{ index .Config.Labels "org.upri.sender.bundle.version" }} {{ index .Config.Labels "org.upri.sender.bundle.tag" }}'
+    ```
+3. Authenticate to ghcr.io before publishing:
     ```bash
     echo "$GITHUB_TOKEN" | docker login ghcr.io -u <github-username> --password-stdin
     ```
     > ℹ️ Note: You need an access token to publish, install, and delete private, internal, and public packages in Github Packages. Refer to this [tutorial](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry) on how to authenticate to the container registry.
 
-3. Validate bundle labels:
+4. Push the tags once ready:
     ```bash
-    docker inspect ghcr.io/upri-earthquake/sender-frontend:X.Y.Z \
-      --format '{{ index .Config.Labels "org.upri.sender.bundle.version" }} {{ index .Config.Labels "org.upri.sender.bundle.tag" }}'
+    docker push ghcr.io/upri-earthquake/sender-frontend:X.Y.Z
+    docker push ghcr.io/upri-earthquake/sender-frontend:latest
     ```
 
 ## Development Workflow: Creating New Feature
