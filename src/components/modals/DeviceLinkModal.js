@@ -252,12 +252,12 @@ function DeviceLinkModal(props) {
                   className={styles.modalInput}
                   type="number"
                   step="0.000001"
-                  min="-180"
-                  max="180"
-                  value={inputLongitude}
-                  onChange={(e) => setInputLongitude(e.target.value)}
+                  min="-90"
+                  max="90"
+                  value={inputLatitude}
+                  onChange={(e) => setInputLatitude(e.target.value)}
                 />
-                <label className={styles.inputLabel}>Longitude: <small>(in degree coordinates, −180 to 180; e.g. `10.1234`)</small></label>
+                <label className={styles.inputLabel}>Latitude: <small>(in degree coordinates, −90 to 90; e.g. `10.1234`)</small></label>
               </div>
 
               <div className={styles.inputField}>
@@ -265,12 +265,12 @@ function DeviceLinkModal(props) {
                   className={styles.modalInput}
                   type="number"
                   step="0.000001"
-                  min="-90"
-                  max="90"
-                  value={inputLatitude}
-                  onChange={(e) => setInputLatitude(e.target.value)}
+                  min="-180"
+                  max="180"
+                  value={inputLongitude}
+                  onChange={(e) => setInputLongitude(e.target.value)}
                 />
-                <label className={styles.inputLabel}>Latitude: <small>(in degree coordinates, −90 to 90; e.g. `10.1234`)</small></label>
+                <label className={styles.inputLabel}>Longitude: <small>(in degree coordinates, −180 to 180; e.g. `10.1234`)</small></label>
               </div>
 
               <div className={styles.inputField}>
