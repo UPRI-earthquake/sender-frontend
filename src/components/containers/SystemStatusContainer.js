@@ -399,30 +399,38 @@ function SystemStatusContainer() {
     ? new Date(senderState.checkedAt).toLocaleString(undefined, { hour12: false })
     : 'n/a';
   const autoUpdateInfo = senderState?.autoUpdate || {};
+  const autoUpdateAvailable = Boolean(autoUpdateInfo?.available);
   const autoUpdatePayload = autoUpdateInfo?.state || {};
   const rollbackInfo = autoUpdatePayload?.rollback || {};
-  const rollbackResult = rollbackInfo?.result || autoUpdatePayload?.ROLLBACK_RESULT || 'unknown';
-  const backendUpdateResult = autoUpdatePayload?.backendResult || autoUpdatePayload?.BACKEND_PULL_STATE || 'n/a';
-  const frontendUpdateResult = autoUpdatePayload?.frontendResult || autoUpdatePayload?.FRONTEND_PULL_STATE || 'n/a';
-  const bundleTag = autoUpdatePayload?.bundleTag || autoUpdatePayload?.BUNDLE_TAG || 'n/a';
+  const rollbackResult = rollbackInfo?.result || autoUpdatePayload?.ROLLBACK_RESULT || null;
+  const backendUpdateResult = autoUpdatePayload?.backendResult || autoUpdatePayload?.BACKEND_PULL_STATE || null;
+  const frontendUpdateResult = autoUpdatePayload?.frontendResult || autoUpdatePayload?.FRONTEND_PULL_STATE || null;
+  const bundleTag = autoUpdatePayload?.bundleTag || autoUpdatePayload?.BUNDLE_TAG || null;
 
   const watchdogInfo = senderState?.watchdog || {};
+  const watchdogAvailable = Boolean(watchdogInfo?.available);
   const watchdogState = watchdogInfo?.state || {};
   const watchdogBackendRestart = watchdogState?.WATCHDOG_BACKEND_LAST_RESTART_TS;
   const watchdogFrontendRestart = watchdogState?.WATCHDOG_FRONTEND_LAST_RESTART_TS;
 
   const diskAlertInfo = senderState?.diskAlerts || {};
+  const diskAlertAvailable = Boolean(diskAlertInfo?.available);
   const diskAlertState = diskAlertInfo?.state || {};
   const diskAlertLevel = diskAlertState?.LAST_DISK_ALERT_LEVEL
     || diskAlertState?.DISK_ALERT_LAST_LEVEL
-    || 'unknown';
+    || null;
   const diskAlertFreePct = diskAlertState?.LAST_DISK_ALERT_FREE_PCT
     || diskAlertState?.DISK_ALERT_LAST_FREE_PCT
     || null;
 
   const tokenAlertInfo = senderState?.tokenRefreshAlerts || {};
+  const tokenAlertAvailable = Boolean(tokenAlertInfo?.available);
   const tokenAlertState = tokenAlertInfo?.state || {};
   const tokenRefreshFailures = Number(tokenAlertState?.failureCount ?? 0);
+  const runtimeGroupsAvailable = autoUpdateAvailable
+    || watchdogAvailable
+    || diskAlertAvailable
+    || tokenAlertAvailable;
 
   const senderRuntimeTone = (() => {
     const backendFailed = toLowerString(backendUpdateResult).includes('fail');
@@ -432,6 +440,7 @@ function SystemStatusContainer() {
     if (backendFailed || frontendFailed || rollbackFailed || diskLevel === 'critical') return 'danger';
     if (diskLevel === 'warn' || diskLevel === 'warning' || tokenRefreshFailures > 0) return 'warn';
     if (!senderState) return 'muted';
+    if (!runtimeGroupsAvailable) return 'muted';
     return 'success';
   })();
 
@@ -584,17 +593,38 @@ function SystemStatusContainer() {
               <p className={styles.errorText}>{senderStateError}</p>
             )}
             <div className={styles.runtimeGrid}>
-              <p className={styles.runtimeItem}><strong>Auto-update:</strong> {backendUpdateResult} / {frontendUpdateResult}</p>
-              <p className={styles.runtimeItem}><strong>Bundle:</strong> {bundleTag}</p>
-              <p className={styles.runtimeItem}><strong>Rollback:</strong> {rollbackResult}</p>
-              <p className={styles.runtimeItem}>
-                <strong>Watchdog restarts:</strong> backend {formatUnixSeconds(watchdogBackendRestart)}, frontend {formatUnixSeconds(watchdogFrontendRestart)}
-              </p>
-              <p className={styles.runtimeItem}>
-                <strong>Disk alert:</strong> {diskAlertLevel}{diskAlertFreePct !== null && diskAlertFreePct !== undefined ? ` (${diskAlertFreePct}% free)` : ''}
-              </p>
-              <p className={styles.runtimeItem}><strong>Token refresh failures:</strong> {tokenRefreshFailures}</p>
+              {autoUpdateAvailable && (
+                <>
+                  <p className={styles.runtimeItem}>
+                    <strong>Auto-update:</strong> {backendUpdateResult || 'not recorded'} / {frontendUpdateResult || 'not recorded'}
+                  </p>
+                  {bundleTag && (
+                    <p className={styles.runtimeItem}><strong>Bundle:</strong> {bundleTag}</p>
+                  )}
+                  {rollbackResult && (
+                    <p className={styles.runtimeItem}><strong>Rollback:</strong> {rollbackResult}</p>
+                  )}
+                </>
+              )}
+              {watchdogAvailable && (
+                <p className={styles.runtimeItem}>
+                  <strong>Watchdog restarts:</strong> backend {formatUnixSeconds(watchdogBackendRestart)}, frontend {formatUnixSeconds(watchdogFrontendRestart)}
+                </p>
+              )}
+              {diskAlertAvailable && (
+                <p className={styles.runtimeItem}>
+                  <strong>Disk alert:</strong> {diskAlertLevel || 'none'}{diskAlertFreePct !== null && diskAlertFreePct !== undefined ? ` (${diskAlertFreePct}% free)` : ''}
+                </p>
+              )}
+              {tokenAlertAvailable && (
+                <p className={styles.runtimeItem}><strong>Token refresh failures:</strong> {tokenRefreshFailures}</p>
+              )}
             </div>
+            {!runtimeGroupsAvailable && !senderStateError && (
+              <p className={styles.runtimeUnavailable}>
+                No runtime state files have been recorded yet. This is normal before the updater, watchdog, or disk alert checks run.
+              </p>
+            )}
             <p className={styles.runtimeMeta}>Checked: {senderStateCheckedAt}</p>
           </div>
         )}

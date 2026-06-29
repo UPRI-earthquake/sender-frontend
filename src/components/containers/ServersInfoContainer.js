@@ -18,7 +18,7 @@ function ServersInfoContainer({ refreshFlag }) {
   const BASE_POLL_MS = 15000;
   const MAX_POLL_MS = 30000;
   const defaultProtectedRingserverUsername = String(
-    window?.ENV?.REACT_APP_DEFAULT_RINGSERVER_USERNAME || 'UP-Diliman',
+    window?.ENV?.REACT_APP_DEFAULT_RINGSERVER_USERNAME || 'UPRI',
   ).trim().toLowerCase();
 
   //MODAL STATES
