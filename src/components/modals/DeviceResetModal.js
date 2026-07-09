@@ -5,7 +5,12 @@ import Toast from "../Toast.js";
 import LoadingScreen from "../LoadingScreen";
 import { logError } from "../../utils/logging";
 
-function DeviceResetModal(props) {
+function DeviceResetModal({
+  linkState,
+  onModalClose,
+  onResettingChange,
+  onResetSuccess,
+}) {
   const [loadingScreen, setLoadingScreen] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const modalRef = useRef(null);
@@ -26,11 +31,11 @@ function DeviceResetModal(props) {
     );
 
     return () => {
-      if (props.onResettingChange) {
-        props.onResettingChange(false);
+      if (onResettingChange) {
+        onResettingChange(false);
       }
     };
-  }, [props.onResettingChange]);
+  }, [onResettingChange]);
 
   // TOASTS
   const [toastMessage, setToastMessage] = useState('')
@@ -39,8 +44,8 @@ function DeviceResetModal(props) {
   const handleDeviceReset = async(event) => {
     event.preventDefault();
     setLoadingScreen(true);
-    if (props.onResettingChange) {
-      props.onResettingChange(true);
+    if (onResettingChange) {
+      onResettingChange(true);
     }
 
     try {
@@ -53,10 +58,10 @@ function DeviceResetModal(props) {
       const message = response?.data?.message || 'Device link reset. Use Link Device to link this device again.';
       const toastType = payload?.remoteReset === false ? 'warning' : 'success';
 
-      if (props.onResetSuccess) {
-        props.onResetSuccess({ message, toastType });
+      if (onResetSuccess) {
+        onResetSuccess({ message, toastType });
       }
-      props.onModalClose();
+      onModalClose();
     } catch (error) {
       logError('Device reset failed:', error);
       let errorSummary = "Unable to reset link. Try again in a moment.";
@@ -69,8 +74,8 @@ function DeviceResetModal(props) {
 
       setTimeout(() => {
         setLoadingScreen(false);
-        if (props.onResettingChange) {
-          props.onResettingChange(false);
+        if (onResettingChange) {
+          onResettingChange(false);
         }
         setToastType('error');
         setToastMessage(errorSummary);
@@ -81,8 +86,8 @@ function DeviceResetModal(props) {
       return;
     }
 
-    if (props.onResettingChange) {
-      props.onResettingChange(false);
+    if (onResettingChange) {
+      onResettingChange(false);
     }
     setLoadingScreen(false);
   }
@@ -90,10 +95,10 @@ function DeviceResetModal(props) {
   const handleModalClose = (event) => {
     event.preventDefault();
 
-    if (props.onResettingChange) {
-      props.onResettingChange(false);
+    if (onResettingChange) {
+      onResettingChange(false);
     }
-    props.onModalClose();
+    onModalClose();
   }
 
   return (
@@ -114,7 +119,7 @@ function DeviceResetModal(props) {
           <div className={styles.modalBodyCopy}>
             <p className={styles.warningTitle}>Destructive reset</p>
             <p className={styles.warningText}>
-              {props.linkState === 'unlinked'
+              {linkState === 'unlinked'
                 ? 'No active link detected. This cleans up stored credentials before relinking.'
                 : 'Clears stored credentials and removes this device from its current account.'}
             </p>

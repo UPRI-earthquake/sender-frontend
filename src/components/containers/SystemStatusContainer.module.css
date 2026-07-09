@@ -252,6 +252,73 @@
   gap: 10px;
 }
 
+.runtimeCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.runtimeHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevronButton {
+  width: 34px;
+  height: 34px;
+}
+
+.chevronIcon {
+  transition: transform 160ms ease;
+}
+
+.chevronExpanded {
+  transform: rotate(180deg);
+}
+
+.runtimeCollapsedCopy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.runtimeBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.runtimeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 14px;
+}
+
+.runtimeItem {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.runtimeUnavailable {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.runtimeMeta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .metricHeader {
   display: flex;
   justify-content: space-between;
@@ -381,5 +448,9 @@
 @media (max-width: 720px) {
   .authActionsRow {
     align-items: flex-start;
+  }
+
+  .runtimeHeaderActions {
+    gap: 6px;
   }
 }

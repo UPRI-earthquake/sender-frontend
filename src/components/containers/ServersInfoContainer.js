@@ -17,6 +17,9 @@ const formatTimestamp = (timestampMs) => {
 function ServersInfoContainer({ refreshFlag }) {
   const BASE_POLL_MS = 15000;
   const MAX_POLL_MS = 30000;
+  const defaultProtectedRingserverUsername = String(
+    window?.ENV?.REACT_APP_DEFAULT_RINGSERVER_USERNAME || 'UPRI',
+  ).trim().toLowerCase();
 
   //MODAL STATES
   const [showAddServerModal, setAddServerModalShow] = useState(false);
@@ -98,6 +101,9 @@ function ServersInfoContainer({ refreshFlag }) {
   };
 
   const hasErrorStatus = (status) => (status || '').toLowerCase().includes('error');
+  const isUiProtectedServer = (server) => {
+    return String(server?.institutionName || '').trim().toLowerCase() === defaultProtectedRingserverUsername;
+  };
 
   const handleRemoveServer = async (url) => {
     if (!url) return;
@@ -110,7 +116,8 @@ function ServersInfoContainer({ refreshFlag }) {
       await fetchServers();
     } catch (error) {
       logError('Remove server failed:', error);
-      showToast('Unable to remove server. Please try again.', 'error');
+      const backendMessage = error?.response?.data?.message;
+      showToast(backendMessage || 'Unable to remove server. Please try again.', 'error');
     }
   };
 
@@ -338,7 +345,9 @@ function ServersInfoContainer({ refreshFlag }) {
 
               <tbody>
                 {servers.length > 0 ? (
-                  servers.map((server) => (
+                  servers.map((server) => {
+                    const uiProtected = isUiProtectedServer(server);
+                    return (
                     <tr key={server.url} className={hasErrorStatus(server.status) ? styles.errorRow : ''}>
                       <td className={styles.cellInstitution}>
                         <span className={styles.cellLabel}>Institution</span>
@@ -364,16 +373,21 @@ function ServersInfoContainer({ refreshFlag }) {
                         <span className={styles.cellLabel}>Action</span>
                         <button
                           className={styles.actionButton}
+                          disabled={uiProtected}
+                          title={uiProtected
+                            ? 'Default ringserver is UI-protected. Use API if removal is required.'
+                            : 'Remove ringserver'}
                           onClick={() => setServerPendingRemoval({
                             url: server.url,
                             institutionName: server.institutionName,
                           })}
                         >
-                          Remove
+                          {uiProtected ? 'Protected' : 'Remove'}
                         </button>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={4} className={styles.emptyState}>No servers added yet.</td>

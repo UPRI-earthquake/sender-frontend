@@ -1,6 +1,10 @@
 # Stage 1: base, minimal setup for dev, shall contain non-js deps.
 #          To be bind-mounted to local dev files (includint node_modules)
-FROM arm32v7/node:18-alpine AS base
+ARG BUNDLE_VERSION=dev
+ARG BUNDLE_TAG=latest
+ARG VCS_REF=unknown
+
+FROM arm32v7/node:22-alpine AS base
 
 EXPOSE 3000
 
@@ -9,11 +13,11 @@ WORKDIR /app
 # Stage 2: prod
 FROM base AS build
 
-ENV PATH=/app/node-modules/.bin:$PATH
+ENV PATH=/app/node_modules/.bin:$PATH
 ENV NODE_ENV=production
 COPY package.json ./
 COPY package-lock.json ./
-RUN npm ci
+RUN npm ci --include=dev
 #RUN npm install react-scripts@4.0.3 -g
 
 # copy source except config
@@ -26,6 +30,9 @@ RUN npm run build
 
 # production environment, use nginx as static server
 FROM arm32v7/nginx:stable-alpine
+ARG BUNDLE_VERSION
+ARG BUNDLE_TAG
+ARG VCS_REF
 
 EXPOSE 3000
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -34,6 +41,8 @@ COPY ./import-env.sh /import-env.sh
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /import-env.sh
 RUN chmod +x /entrypoint.sh
+ENV SENDER_IMAGE_BUNDLE_VERSION=${BUNDLE_VERSION}
+ENV SENDER_BUNDLE_TAG=${BUNDLE_TAG}
 
 # import env vars from environment
 ENTRYPOINT ["./entrypoint.sh"]
@@ -44,3 +53,6 @@ CMD ["nginx", "-g", "daemon off;"]
 LABEL org.opencontainers.image.source="https://github.com/UPRI-earthquake/sender-frontend"
 LABEL org.opencontainers.image.description="Base docker image for sender frontend"
 LABEL org.opencontainers.image.authors="earthquake@science.upd.edu.ph"
+LABEL org.opencontainers.image.revision="$VCS_REF"
+LABEL org.upri.sender.bundle.version="$BUNDLE_VERSION"
+LABEL org.upri.sender.bundle.tag="$BUNDLE_TAG"

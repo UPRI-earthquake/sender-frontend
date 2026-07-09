@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import DeviceResetModal from '../modals/DeviceResetModal';
 import InfoTooltip from '../InfoTooltip';
@@ -21,7 +21,7 @@ function RecoveryContainer() {
   const [toastType, setToastType] = useState('success');
   const [linkState, setLinkState] = useState('unknown');
 
-  const fetchLinkedState = async () => {
+  const fetchLinkedState = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(`${backendHost}/device/info`);
@@ -39,11 +39,11 @@ function RecoveryContainer() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendHost]);
 
   useEffect(() => {
     fetchLinkedState();
-  }, [backendHost]);
+  }, [fetchLinkedState]);
 
   const handleResettingChange = (inProgress) => {
     setResetting(inProgress);

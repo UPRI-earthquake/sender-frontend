@@ -1,10 +1,23 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { default as DeviceLinkModal } from './../modals/DeviceLinkModal';
 import { default as DeviceUnlinkModal } from './../modals/DeviceUnlinkModal';
 import styles from "./DeviceInfoContainer.module.css";
 import Toast from '../Toast';
 import { logError } from '../../utils/logging';
+
+const formatNumber = (value) => {
+  if (value === null || value === undefined || value === '') return '';
+  const numericValue = Number(value);
+  if (Number.isNaN(numericValue)) return '';
+  return (Math.round(numericValue * 100) / 100).toFixed(2);
+};
+
+const formatDisplayValue = (value, suffix) => {
+  const formatted = formatNumber(value);
+  if (!formatted) return 'Not Set';
+  return suffix ? `${formatted}${suffix}` : formatted;
+};
 
 function DeviceInfoContainer(props) {
   const backendHost = useMemo(() => (
@@ -22,7 +35,6 @@ function DeviceInfoContainer(props) {
   const [latitude, setLatitude] = useState('Not Set');
   const [elevation, setElevation] = useState('Not Set');
   const [status, setStatus] = useState('Not Linked');
-  const [linkState, setLinkState] = useState('unknown');
   const [prefillLocation, setPrefillLocation] = useState({ longitude: '', latitude: '', elevation: '' });
   const [refreshingMetadata, setRefreshingMetadata] = useState(false);
 
@@ -30,20 +42,7 @@ function DeviceInfoContainer(props) {
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('success')
 
-  const formatNumber = (value) => {
-    if (value === null || value === undefined || value === '') return '';
-    const numericValue = Number(value);
-    if (Number.isNaN(numericValue)) return '';
-    return (Math.round(numericValue * 100) / 100).toFixed(2);
-  };
-
-  const formatDisplayValue = (value, suffix) => {
-    const formatted = formatNumber(value);
-    if (!formatted) return 'Not Set';
-    return suffix ? `${formatted}${suffix}` : formatted;
-  };
-
-  const getDeviceInfo = async () => {
+  const getDeviceInfo = useCallback(async () => {
     try {
       const response = await axios.get(`${backendHost}/device/info`)
       const deviceInfo = response.data.payload;
@@ -60,7 +59,6 @@ function DeviceInfoContainer(props) {
       setLongitude(formatDisplayValue(mergedLongitude, '°'));
       setLatitude(formatDisplayValue(mergedLatitude, '°'));
       setElevation(formatDisplayValue(mergedElevation, 'm'));
-      setLinkState(deviceInfo.linkState || 'unknown');
       const nextStatus = deviceInfo.linked
         ? 'Linked'
         : (deviceInfo.linkState === 'unlinked' ? 'Unlinked' : 'Not Linked');
@@ -76,11 +74,11 @@ function DeviceInfoContainer(props) {
     } catch (error) {
       logError('Device info fetch failed:', error);
     }
-  }
+  }, [backendHost]);
 
   useEffect(() => {
     getDeviceInfo()
-  }, [backendHost])
+  }, [getDeviceInfo])
 
   const handleOnLinkingSuccess = () => {
     if (props.setRefreshFlag) {
@@ -117,7 +115,7 @@ function DeviceInfoContainer(props) {
       await axios.post(`${backendHost}/device/config/refresh`);
       await getDeviceInfo();
       setToastType('success');
-      setToastMessage('Location values refreshed from RShake config');
+      setToastMessage('Device metadata refreshed from RShake config');
     } catch (error) {
       logError('Host metadata refresh failed:', error);
       const errorSummary = error?.response?.data?.message;
@@ -199,7 +197,7 @@ function DeviceInfoContainer(props) {
             <div className={styles.sectionLabelRow}>
               <div>
                 <p className={styles.sectionLabel}>Location</p>
-                <p className={styles.sectionHelper}>Synced from device host configuration.</p>
+                <p className={styles.sectionHelper}>Synced from device host configuration (network, station, and location).</p>
               </div>
               <span className={styles.iconOrnament}>
                 <button
@@ -208,7 +206,7 @@ function DeviceInfoContainer(props) {
                   onClick={handleRefreshHostMetadata}
                   disabled={refreshingMetadata}
                   title="Refresh from RShake config"
-                  aria-label="Refresh location from RShake config"
+                  aria-label="Refresh device metadata from RShake config"
                 >
                   <svg
                     width="18"
