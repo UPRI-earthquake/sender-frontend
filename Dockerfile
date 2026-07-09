@@ -13,11 +13,11 @@ WORKDIR /app
 # Stage 2: prod
 FROM base AS build
 
-ENV PATH=/app/node-modules/.bin:$PATH
+ENV PATH=/app/node_modules/.bin:$PATH
 ENV NODE_ENV=production
 COPY package.json ./
 COPY package-lock.json ./
-RUN npm ci
+RUN npm ci --include=dev
 #RUN npm install react-scripts@4.0.3 -g
 
 # copy source except config
