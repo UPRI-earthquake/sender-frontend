@@ -42,7 +42,7 @@ For local development, the sender-backend repository is needed to serve the requ
         See [this cheatsheet](https://upri-earthquake.github.io/docker-cheatsheet) for useful docker recipes.
 
 ## Publishing container image (For admins)
-1. Build the image locally, and tag with the correct [semantic versioning](https://semver.org/): 
+1. Build the image locally, and tag with the correct [semantic versioning](https://semver.org/):
     > Note: replace X.Y.Z, and you should be at the same directory as the Dockerfile
     > This keeps a local copy first so retagging and rollback are easier before publishing.
 
