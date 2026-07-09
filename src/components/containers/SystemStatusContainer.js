@@ -156,7 +156,6 @@ function SystemStatusContainer() {
     } finally {
       setDiskRefreshing(false);
       setCpuRefreshing(false);
-      setSenderStateRefreshing(false);
     }
   }, [backendHost]);
 

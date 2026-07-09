@@ -29,7 +29,7 @@ index 522a81b..d86fa25 100644
 -      // This lets us fetch source contents from webpack for the error overlay
 +    setupMiddlewares(middlewares, devServer) {
        devServer.app.use(evalSourceMapMiddleware(devServer));
- 
+
        if (fs.existsSync(paths.proxySetup)) {
          // This registers user provided middleware for proxy reasons
          require(paths.proxySetup)(devServer.app);

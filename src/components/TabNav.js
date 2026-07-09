@@ -68,6 +68,7 @@ function TabNav({ activeTab, onSelect, compact = false }) {
               onClick={() => onSelect(tab.id)}
               role="tab"
               aria-selected={isActive}
+              aria-label={tab.label}
             >
               {tab.icon && <span className={styles.tabIcon}>{tab.icon}</span>}
               {!compact && <span className={styles.tabLabel}>{tab.label}</span>}

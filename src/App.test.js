@@ -19,8 +19,8 @@ describe('App shell navigation', () => {
   it('switches to status view when Status tab is clicked', async () => {
     render(<App />);
 
-    const tabs = screen.getAllByRole('tab');
-    fireEvent.click(tabs[1]);
+    const statusTab = screen.getByRole('tab', { name: /status/i });
+    fireEvent.click(statusTab);
 
     expect(screen.getByText('System Status Panel')).toBeInTheDocument();
     expect(screen.getByText('Recovery Panel')).toBeInTheDocument();
