@@ -4,7 +4,7 @@ ARG BUNDLE_VERSION=dev
 ARG BUNDLE_TAG=latest
 ARG VCS_REF=unknown
 
-FROM arm32v7/node:18-alpine AS base
+FROM arm32v7/node:22-alpine AS base
 
 EXPOSE 3000
 
